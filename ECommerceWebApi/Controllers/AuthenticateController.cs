@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using ECommerceIServices;
 using ECommerceModels.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -21,12 +22,14 @@ namespace ECommerceWebApi.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
         private readonly IConfiguration _configuration;
+        private readonly IEmailSender emailSender;
 
-        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IEmailSender emailSender)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
             _configuration = configuration;
+            this.emailSender = emailSender;
         }
 
         [HttpPost]
@@ -86,6 +89,13 @@ namespace ECommerceWebApi.Controllers
             if (!result.Succeeded)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
+
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token }, Request.Scheme);
+            string message = $"Click this link to confirm your account: {confirmationLink}";
+           
+            await emailSender.SendEmailAsync(model.Email, "Confirm your account", message);
+
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
 
@@ -119,5 +129,43 @@ namespace ECommerceWebApi.Controllers
 
             return Ok(new Response { Status = "Success", Message = "User created successfully!" });
         }
+   
+        [HttpPost]
+        [Route("confirmEmail")]
+        public async Task<IActionResult> ConfirmEmail(string userId,string token)
+        {
+            if(userId == null || token == null)
+                return StatusCode(StatusCodes.Status404NotFound, "No user found or token is invalid");
+
+            var user = await userManager.FindByIdAsync(userId);
+
+            if(user == null)
+            {
+                return StatusCode(StatusCodes.Status404NotFound,"User not found");
+            }
+
+            var result = await userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+                return Ok();
+
+            return StatusCode(StatusCodes.Status404NotFound, "");
+        }
+
+        [HttpPost]
+        [Route("confirm")]
+        public async Task<IActionResult> SendConfirmationMail(string userId)
+        {
+            var user = await userManager.FindByIdAsync(userId);
+            var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+            var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token },Request.Scheme);
+            string message = $"Click this link to confirm your account: " + confirmationLink;
+
+            await emailSender.SendEmailAsync(user.Email, "Confirm your account", message);
+
+            return Ok(new Response { Status = "Success", Message = "Message sent!" });
+        }
+
+
     }
 }

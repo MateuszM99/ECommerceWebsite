@@ -17,6 +17,9 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using ECommerceIServices;
+using ECommerceServices;
+using ECommerceModels.Models;
 
 namespace ECommerceWebApi
 {
@@ -42,6 +45,9 @@ namespace ECommerceWebApi
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ECommerceContext>()
                 .AddDefaultTokenProviders();
+
+            services.AddTransient<IEmailSender, EmailSender>();
+            services.Configure<AuthSenderOptions>(Configuration);
 
             // Adding Authentication  
             services.AddAuthentication(options =>
