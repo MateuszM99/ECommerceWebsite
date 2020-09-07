@@ -1,4 +1,5 @@
-﻿using ECommerceModels.Authentication;
+﻿using ECommerceData.Migrations;
+using ECommerceModels.Authentication;
 using ECommerceModels.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -31,6 +32,15 @@ namespace ECommerceData
 
             builder.Entity<CartProduct>().HasKey(key => new { key.CartId, key.ProductId });
 
+            builder.Entity<CartProduct>()
+                .HasOne<Product>(p => p.Product)
+                .WithMany(c => c.CartProducts)
+                .HasForeignKey(p => p.ProductId);
+
+            builder.Entity<CartProduct>()
+                .HasOne<ShoppingCart>(c => c.Cart)
+                .WithMany(p => p.CartProducts)
+                .HasForeignKey(c => c.CartId);
         }
     }
 }

@@ -13,5 +13,6 @@ namespace ECommerceModels.Models
         [ForeignKey("Standard")]
         public string UserId { get; set; }
         public float TotalPrice { get; set; }
+        public IList<CartProduct> CartProducts { get; set; }
     }
 }

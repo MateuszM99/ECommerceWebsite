@@ -89,7 +89,6 @@ namespace ECommerceWebApi.Controllers
             if (!result.Succeeded)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
-
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token }, Request.Scheme);
             string message = $"Click this link to confirm your account: {confirmationLink}";
@@ -165,7 +164,5 @@ namespace ECommerceWebApi.Controllers
 
             return Ok(new Response { Status = "Success", Message = "Message sent!" });
         }
-
-
     }
 }

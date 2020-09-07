@@ -4,14 +4,16 @@ using ECommerceData;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ECommerceData.Migrations
 {
     [DbContext(typeof(ECommerceContext))]
-    partial class ECommerceContextModelSnapshot : ModelSnapshot
+    [Migration("20200907161536_fix")]
+    partial class fix
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -137,8 +139,6 @@ namespace ECommerceData.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("CartId", "ProductId");
-
-                    b.HasIndex("ProductId");
 
                     b.ToTable("CartProducts");
                 });
@@ -388,21 +388,6 @@ namespace ECommerceData.Migrations
                     b.HasOne("ECommerceModels.Models.Address", "Address")
                         .WithMany()
                         .HasForeignKey("AddressAdresId");
-                });
-
-            modelBuilder.Entity("ECommerceModels.Models.CartProduct", b =>
-                {
-                    b.HasOne("ECommerceModels.Models.ShoppingCart", "Cart")
-                        .WithMany("CartProducts")
-                        .HasForeignKey("CartId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("ECommerceModels.Models.Product", "Product")
-                        .WithMany("CartProducts")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
