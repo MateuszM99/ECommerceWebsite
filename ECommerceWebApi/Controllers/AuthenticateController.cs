@@ -153,7 +153,7 @@ namespace ECommerceWebApi.Controllers
         }
 
         [HttpPost]
-        [Route("confirm")]
+        [Route("sendConfirm")]
         public async Task<IActionResult> SendConfirmationMail(string userId)
         {
             var user = await userManager.FindByIdAsync(userId);
