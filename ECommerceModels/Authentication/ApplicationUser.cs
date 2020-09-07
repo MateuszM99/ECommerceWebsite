@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Net.Sockets;
 using System.Text;
 using ECommerceModels.Models;
@@ -11,6 +12,8 @@ namespace ECommerceModels.Authentication
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        [ForeignKey("Standard")]
+        public int AdresId { get; set; }
         public Address Address { get; set; }
     }
 }

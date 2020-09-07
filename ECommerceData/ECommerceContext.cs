@@ -1,5 +1,5 @@
 ﻿using ECommerceModels.Authentication;
-using ECommerceWebApi.Models;
+using ECommerceModels.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -15,11 +15,18 @@ namespace ECommerceData
         {
         }
 
-        public DbSet<Test> Test { get; set; }
+        public DbSet<Product> Products { get; set; }
+        public DbSet<Category> Categories { get; set; }
+        public DbSet<Option> Options { get; set; }
+        public DbSet<OptionGroup> OptionGroups { get; set; }
+        public DbSet<ProductOption> ProductOption { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<ProductOption>().HasKey(key => new { key.OptionId, key.ProductId });
+
         }
     }
 }
