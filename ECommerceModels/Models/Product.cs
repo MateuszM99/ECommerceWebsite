@@ -16,7 +16,9 @@ namespace ECommerceModels.Models
         public string ProductSKU { get; set; }
         [ForeignKey("Standard")]
         public int? CategoryId { get; set; }
+        public Category Category { get; set; }
         public DateTime AddedAt { get; set; }
         public IList<CartProduct> CartProducts { get; set; }
+        public IList<ProductOption> ProductOptions { get; set; }
     }
 }

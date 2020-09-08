@@ -10,5 +10,6 @@ namespace ECommerceModels.Models
         [Key]
         public int OptionGroupId { get; set; }
         public string OptionGroupName { get; set; }
+        public IList<Option> Options { get; set; }
     }
 }

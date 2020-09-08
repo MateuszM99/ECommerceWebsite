@@ -11,7 +11,9 @@ namespace ECommerceModels.Models
         [Key]
         public int OptionId { get; set; }
         public string OptionName { get; set; }
+        public IList<ProductOption> ProductOptions { get; set; }
         [ForeignKey("Standard")]
         public int OptionGroupId { get; set; }
+        public OptionGroup OptionGroup { get; set; }
     }
 }
