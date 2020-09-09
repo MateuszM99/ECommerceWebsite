@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ECommerceData;
+using ECommerceIServices;
 using ECommerceModels.Authentication;
 using ECommerceModels.Models;
 using Microsoft.AspNetCore.Http;
@@ -18,10 +19,12 @@ namespace ECommerceWebApi.Controllers
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly ECommerceContext appDb;
-        public CartController(UserManager<ApplicationUser> userManager,ECommerceContext appDb)
+        private readonly ICartServices cartServices;
+        public CartController(UserManager<ApplicationUser> userManager,ECommerceContext appDb, ICartServices cartServices)
         {
             this.userManager = userManager;
             this.appDb = appDb;
+            this.cartServices = cartServices;
         }
         
         [HttpPost]
@@ -29,47 +32,19 @@ namespace ECommerceWebApi.Controllers
         public async Task<IActionResult> AddToCart(int productId)
         {         
             var user = await userManager.GetUserAsync(User);
-            var cart = await appDb.Carts.Where(c => c.UserId == user.Id).FirstOrDefaultAsync();
-           
-            if (cart == null)
-            {
-                cart = new ShoppingCart();
-                await appDb.AddAsync(cart);
-                await appDb.SaveChangesAsync();
-            }
 
-            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
+            var result = await cartServices.AddToCart(user, productId);
 
-            if(cartProduct == null)
-            {
-                cartProduct = new CartProduct()
-                {
-                    CartId = cart.CartId,
-                    ProductId = productId,
-                    Quantity = 1
-                };
-
-                await appDb.CartProducts.AddAsync(cartProduct);
-                await appDb.SaveChangesAsync();
-
-                return Ok();
-            }
-
-            cartProduct.Quantity++;
-            await appDb.SaveChangesAsync();
-
-            cart.TotalPrice = appDb.CartProducts
-                        .Where(x => x.CartId == cart.CartId)
-                        .Select(x => x.Product.ProductPrice * x.Quantity)
-                        .Sum();
             
-            await appDb.SaveChangesAsync();
-
             return Ok();            
         }
         
-        public async Task<IActionResult> RemoveFromCart()
+        public async Task<IActionResult> RemoveFromCart(int productId)
         {
+            var user = await userManager.GetUserAsync(User);
+
+            var result = await cartServices.RemoveFromCart(user, productId);
+
             return Ok();
         }
     

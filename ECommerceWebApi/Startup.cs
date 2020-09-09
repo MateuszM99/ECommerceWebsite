@@ -47,6 +47,7 @@ namespace ECommerceWebApi
                 .AddDefaultTokenProviders();
 
             services.AddTransient<IEmailSender, EmailSender>();
+            services.AddScoped<ICartServices, CartServices>();
             services.Configure<AuthSenderOptions>(Configuration);
 
             // Adding Authentication  

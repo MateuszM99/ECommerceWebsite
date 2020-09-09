@@ -33,7 +33,7 @@ namespace ECommerceWebApi.Controllers
             var product = await appDb.Products.FindAsync(productModel.ProductId);
 
             if (product != null)
-                return StatusCode(StatusCodes.Status403Forbidden);
+                return StatusCode(StatusCodes.Status405MethodNotAllowed);
 
             product = new Product
             {               
