@@ -16,5 +16,6 @@ namespace ECommerceModels.Authentication
         public int AdresId { get; set; }
         public Address Address { get; set; }        
         public ShoppingCart Cart { get; set; }
+        public IList<Order> Orders { get; set; }
     }
 }

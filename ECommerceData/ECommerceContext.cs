@@ -23,6 +23,7 @@ namespace ECommerceData
         public DbSet<ProductOption> ProductOption { get; set; }
         public DbSet<ShoppingCart> Carts { get; set; }
         public DbSet<CartProduct> CartProducts { get; set; }
+        public DbSet<Order> Orders { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -31,6 +32,8 @@ namespace ECommerceData
             builder.Entity<ProductOption>().HasKey(key => new { key.OptionId, key.ProductId });
 
             builder.Entity<CartProduct>().HasKey(key => new { key.CartId, key.ProductId });
+
+            builder.Entity<OrderItem>().HasKey(key => new { key.OrderId, key.ProductId });
 
             builder.Entity<CartProduct>()
                 .HasOne<Product>(p => p.Product)
@@ -68,6 +71,26 @@ namespace ECommerceData
                 .HasOne(u => u.AppUser)
                 .WithOne(c => c.Cart)
                 .HasForeignKey<ShoppingCart>(i => i.UserId);
+
+            builder.Entity<OrderItem>()
+               .HasOne<Product>(p => p.Product)
+               .WithMany(o => o.OrderItems)
+               .HasForeignKey(p => p.ProductId);
+
+            builder.Entity<OrderItem>()
+                .HasOne<Order>(o => o.Order)
+                .WithMany(o => o.OrderItems)
+                .HasForeignKey(o => o.OrderId);
+
+            builder.Entity<Order>()
+                .HasOne<ApplicationUser>(u => u.User)
+                .WithMany(o => o.Orders)
+                .HasForeignKey(u => u.UserId);
+
+            builder.Entity<Order>()
+                .HasOne<Address>(a => a.Address)
+                .WithMany(o => o.Orders)
+                .HasForeignKey(a => a.AddressId);
         }
     }
 }

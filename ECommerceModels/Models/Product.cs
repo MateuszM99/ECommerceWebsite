@@ -20,5 +20,6 @@ namespace ECommerceModels.Models
         public DateTime AddedAt { get; set; }
         public IList<CartProduct> CartProducts { get; set; }
         public IList<ProductOption> ProductOptions { get; set; }
+        public IList<OrderItem> OrderItems { get; set; }
     }
 }
