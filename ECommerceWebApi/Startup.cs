@@ -24,7 +24,7 @@ using ECommerceModels.Models;
 namespace ECommerceWebApi
 {
     public class Startup
-    {
+    {    
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
@@ -36,6 +36,17 @@ namespace ECommerceWebApi
         public void ConfigureServices(IServiceCollection services)
         {        
             services.AddControllers();
+
+            services.AddCors(options =>
+            {
+                options.AddPolicy("Policy",
+                                  builder =>
+                                  {
+                                      builder.WithOrigins("http://localhost:3000")
+                                                        .AllowAnyHeader()
+                                                        .AllowAnyMethod();
+                                  });
+            });
 
             services.AddDbContext<ECommerceContext>(options =>
                options.UseSqlServer(
@@ -87,6 +98,8 @@ namespace ECommerceWebApi
             app.UseRouting();
 
             app.UseAuthorization();
+
+            app.UseCors();         
 
             app.UseEndpoints(endpoints =>
             {

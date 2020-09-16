@@ -122,7 +122,7 @@ namespace ECommerceData.Migrations
 
                     b.HasKey("AdresId");
 
-                    b.ToTable("Address");
+                    b.ToTable("Addresses");
                 });
 
             modelBuilder.Entity("ECommerceModels.Models.CartProduct", b =>

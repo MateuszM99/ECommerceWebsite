@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ECommerceData;
 using ECommerceModels.Authentication;
 using ECommerceModels.Models;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECommerceWebApi.Controllers
 {
@@ -48,5 +52,22 @@ namespace ECommerceWebApi.Controllers
 
             return Ok();
         }
+
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getProducts")]
+        public List<Product> GetProducts()
+        {
+            var products = appDb.Products.ToList();
+
+            return products;
+        }
+
+        public List<Product> SortProducts(string categoryName,string sortType,string orderType,string size,string color,string priceFrom,string priceTo)
+        {
+            return null;
+        }
+
+
     }
 }

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using ECommerceData;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
 using ECommerceModels.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -26,32 +29,58 @@ namespace ECommerceWebApi.Controllers
             this.appDb = appDb;
             this.cartServices = cartServices;
         }
-        
+
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("addCart")]
-        public async Task<IActionResult> AddToCart(int productId)
+        public async Task<IActionResult> AddToCart(int? cartId,int productId)
         {         
-            var user = await userManager.GetUserAsync(User);
-
-            var result = await cartServices.AddToCart(user, productId);
+           
+            var id = await cartServices.AddToCart(cartId, productId);
 
             
-            return Ok();            
+            return Ok(new {
+                id
+            });            
         }
-        
-        public async Task<IActionResult> RemoveFromCart(int productId)
+
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("removeCart")]
+        public async Task<HttpResponseMessage> RemoveFromCart(int cartId,int productId)
         {
-            var user = await userManager.GetUserAsync(User);
+             
+             var result = await cartServices.RemoveFromCart(cartId, productId);
 
-            var result = await cartServices.RemoveFromCart(user, productId);
+             return result;
+         }
 
-            return Ok();
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getCart")]
+        public List<ProductQuantity> getCartProducts(int cartId)
+        {
+            return cartServices.GetCartProducts(cartId);
         }
-    
 
-    
-    
-    
-    
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getCartCount")]
+        public int getCartProductsCount(int cartId)
+        {
+            List<ProductQuantity> productQuantities = cartServices.GetCartProducts(cartId);
+
+            int count = 0;
+
+            foreach(var product in productQuantities)
+            {
+                count += 1 * product.quantity;
+            }
+
+            return count;
+        }
+
+
+   
     }
 }

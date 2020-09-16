@@ -1,11 +1,7 @@
-﻿using ECommerceData.Migrations;
-using ECommerceModels.Authentication;
+﻿using ECommerceModels.Authentication;
 using ECommerceModels.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ECommerceData
 {
@@ -24,6 +20,8 @@ namespace ECommerceData
         public DbSet<ShoppingCart> Carts { get; set; }
         public DbSet<CartProduct> CartProducts { get; set; }
         public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Address> Addresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {

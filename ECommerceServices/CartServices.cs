@@ -1,17 +1,12 @@
 ﻿using ECommerceData;
-using ECommerceData.Migrations;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
 using ECommerceModels.Models;
-using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.EntityFrameworkCore;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace ECommerceServices
@@ -24,9 +19,9 @@ namespace ECommerceServices
             this.appDb = appDb;
         }
 
-        public async Task<HttpResponseMessage> AddToCart(ApplicationUser user, int productId)
+        public async Task<int> AddToCart(int? cartId, int productId)
         {
-            var cart = await appDb.Carts.Where(c => c.UserId == user.Id).FirstOrDefaultAsync();
+            var cart = await appDb.Carts.FindAsync(cartId);
 
             if (cart == null)
             {
@@ -45,13 +40,46 @@ namespace ECommerceServices
                     ProductId = productId,
                     Quantity = 1
                 };
-
-                await appDb.CartProducts.AddAsync(cartProduct);                
-            } else
+                await appDb.CartProducts.AddAsync(cartProduct);
+            }
+            else
             {
                 cartProduct.Quantity++;
             }
-          
+
+            await appDb.SaveChangesAsync();
+
+            cart.TotalPrice = GetCartPrice(cart.CartId);
+            await appDb.SaveChangesAsync();
+
+            return cart.CartId;
+        }
+
+        public async Task<HttpResponseMessage> RemoveFromCart(int? cartId, int productId)
+        {
+            var cart = await appDb.Carts.FindAsync(cartId);
+
+            if (cart == null)
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.MethodNotAllowed);
+            }
+
+            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
+
+            if (cartProduct == null)
+            {
+                return new HttpResponseMessage(System.Net.HttpStatusCode.MethodNotAllowed);
+            }
+
+            if (cartProduct.Quantity <= 1)
+            {
+                appDb.CartProducts.Remove(cartProduct);
+            }
+            else
+            {
+                cartProduct.Quantity--;
+            }
+
             await appDb.SaveChangesAsync();
 
             cart.TotalPrice = GetCartPrice(cart.CartId);
@@ -68,45 +96,12 @@ namespace ECommerceServices
                         .Sum();
         }
 
-        public List<Product> GetCartProducts(int cartId)
+        public List<ProductQuantity> GetCartProducts(int cartId)
         {
-            return appDb.CartProducts.Where(c => c.CartId == cartId)
-                .Select(p => p.Product)
-                .ToList();
-        }
+            var products = appDb.CartProducts.Where(c => c.CartId == cartId)
+                .Select(p => new ProductQuantity(p.Product, p.Quantity)).ToList();
 
-        public async Task<HttpResponseMessage> RemoveFromCart(ApplicationUser user, int productId)
-        {
-            var cart = await appDb.Carts.Where(c => c.UserId == user.Id).FirstOrDefaultAsync();
-
-            if(cart == null)
-            {
-                // error
-                return new HttpResponseMessage(System.Net.HttpStatusCode.MethodNotAllowed);
-            }
-
-            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
-            
-            if(cartProduct == null)
-            {
-                // error
-                return new HttpResponseMessage(System.Net.HttpStatusCode.MethodNotAllowed);
-            }
-
-            if(cartProduct.Quantity <= 1)
-            {
-                appDb.CartProducts.Remove(cartProduct);            
-            } else
-            {
-                cartProduct.Quantity--;             
-            }
-
-            await appDb.SaveChangesAsync();
-
-            cart.TotalPrice = GetCartPrice(cart.CartId);
-            await appDb.SaveChangesAsync();
-
-            return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
-        }
+            return products;
+        }          
     }
 }

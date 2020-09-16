@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,18 @@ namespace ECommerceWebApi.Controllers
             this.emailSender = emailSender;
         }
 
+        public IActionResult getSessionToken()
+        {
+            string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
+
+            return Ok(new
+            {
+                token       
+            });
+        }
+
+
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
@@ -71,6 +84,7 @@ namespace ECommerceWebApi.Controllers
             return Unauthorized();
         }
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("register")]
         public async Task<IActionResult> Register([FromBody] RegisterModel model)
