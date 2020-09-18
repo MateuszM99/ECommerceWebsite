@@ -18,7 +18,7 @@ namespace ECommerceModels.SpecificationPattern
         }
         public ISpecification<T> Not(ISpecification<T> specification)
         {
-            return new NotSpecification<T>(specification);
+            return null;
         }
     }
 }

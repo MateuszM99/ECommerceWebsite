@@ -37,6 +37,10 @@ namespace ECommerceWebApi
         {        
             services.AddControllers();
 
+            services.AddControllers().AddNewtonsoftJson(options =>
+                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                    );
+
             services.AddCors(options =>
             {
                 options.AddPolicy("Policy",
@@ -59,6 +63,7 @@ namespace ECommerceWebApi
 
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddScoped<ICartServices, CartServices>();
+            services.AddScoped<IProductServices, ProductServices>();
             services.Configure<AuthSenderOptions>(Configuration);
 
             // Adding Authentication  

@@ -3,10 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using ECommerceData;
+using ECommerceIServices;
 using ECommerceModels.Authentication;
+using ECommerceModels.Enums;
 using ECommerceModels.Models;
+using ECommerceModels.SpecificationPattern;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -21,10 +25,12 @@ namespace ECommerceWebApi.Controllers
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly ECommerceContext appDb;
-        public ProductsController(UserManager<ApplicationUser> userManager, ECommerceContext appDb)
+        private readonly IProductServices productServices;
+        public ProductsController(UserManager<ApplicationUser> userManager, ECommerceContext appDb, IProductServices productServices)
         {
             this.userManager = userManager;
             this.appDb = appDb;
+            this.productServices = productServices;
         }
 
         [HttpPost]
@@ -58,14 +64,77 @@ namespace ECommerceWebApi.Controllers
         [Route("getProducts")]
         public List<Product> GetProducts()
         {
-            var products = appDb.Products.ToList();
+            return productServices.GetAllProducts();
+        }
+
+        [HttpGet]
+        [Route("products")]
+        public List<Product> FilterProducts(string categoryName,string sortType,string orderType,Size? size,Color? color,float? priceFrom=0,float? priceTo=99999)
+        {
+            List<Product> products = productServices.FilterProducts(categoryName, sortType, orderType, size, color, priceFrom, priceTo);
 
             return products;
         }
 
-        public List<Product> SortProducts(string categoryName,string sortType,string orderType,string size,string color,string priceFrom,string priceTo)
+        public List<Product> SearchProductByName(string productName)
         {
-            return null;
+            var products = productServices.SearchProductsByName(productName);
+
+            return products;
+        }
+
+        [HttpPost]
+        [Route("addOptionGroup")]
+        public async Task<IActionResult> AddOptionGroup([FromBody]OptionGroup optionGroupModel)
+        {
+            if (optionGroupModel == null)
+                return StatusCode(StatusCodes.Status204NoContent);
+
+            await productServices.AddOptionGroup(optionGroupModel);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("addOptionToProduct")]
+        public async Task<IActionResult> AddOptionToProduct(int productId,int optionId)
+        {
+            await productServices.AddOptionToProduct(productId, optionId);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("addOption")]
+        public async Task<IActionResult> AddOption([FromBody]Option optionModel)
+        {
+            if (optionModel == null)
+                return StatusCode(StatusCodes.Status204NoContent);
+
+            await productServices.AddOption(optionModel);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("addCategory")]
+        public async Task<IActionResult> AddCategory([FromBody]Category categoryModel)
+        {
+            if (categoryModel == null)
+                return StatusCode(StatusCodes.Status204NoContent);
+
+            await productServices.AddCategory(categoryModel);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("addCategoryTo")]
+        public async Task<IActionResult> AddCategoryTo(int productId,int categoryId)
+        {
+            await productServices.AddCategoryToProduct(productId, categoryId);
+
+            return Ok();
         }
 
 
