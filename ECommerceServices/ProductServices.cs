@@ -90,12 +90,17 @@ namespace ECommerceServices
             throw new NotImplementedException();
         }
 
-        public List<Product> FilterProducts(string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo)
+        public List<Product> FilterProducts(string productName,string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo)
         {
             IQueryable<Product> query = appDb.Products
                                            .Include(p => p.Category)
                                            .Include(p => p.ProductOptions)
                                                 .ThenInclude(po => po.Option);
+
+            if(productName != null)
+            {
+                query = query.Where(p => p.ProductName.ToLower().Contains(productName.ToLower()));                        
+            }
 
             if (categoryName != null)
             {
@@ -162,13 +167,6 @@ namespace ECommerceServices
         public Product GetProduct(int productId)
         {
             return appDb.Products.Find(productId);
-        }
-
-        public List<Product> SearchProductsByName(string productName)
-        {
-            return appDb.Products
-                        .Where(p => p.ProductName.ToLower().Contains(productName.ToLower()))
-                        .ToList();
         }
     }
 }

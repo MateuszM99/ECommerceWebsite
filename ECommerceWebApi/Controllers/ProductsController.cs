@@ -70,6 +70,14 @@ namespace ECommerceWebApi.Controllers
         {
             return productServices.GetAllProducts();
         }
+        
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getProduct")]
+        public Product GetProduct(string productCategory,string productName,int productId)
+        {
+            return appDb.Products.Include(p => p.Category).Where(p => p.Category.CategoryName == productCategory && p.ProductName == productName && p.ProductId == productId).FirstOrDefault();
+        }
 
         [EnableCors("Policy")]
         [HttpGet]
@@ -82,19 +90,14 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpGet]
         [Route("products")]
-        public List<Product> FilterProducts(string categoryName,string sortType,string orderType,Size? size,Color? color,float? priceFrom=0,float? priceTo=99999)
+        public List<Product> FilterProducts(string productName,string categoryName,string sortType,string orderType,Size? size,Color? color,float? priceFrom=0,float? priceTo=99999)
         {
-            List<Product> products = productServices.FilterProducts(categoryName, sortType, orderType, size, color, priceFrom, priceTo);
+            List<Product> products = productServices.FilterProducts(productName,categoryName, sortType, orderType, size, color, priceFrom, priceTo);
 
             return products;
         }
 
-        public List<Product> SearchProductByName(string productName)
-        {
-            var products = productServices.SearchProductsByName(productName);
-
-            return products;
-        }
+       
 
         [HttpPost]
         [Route("addOptionGroup")]

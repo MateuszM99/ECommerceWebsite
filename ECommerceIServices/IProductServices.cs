@@ -15,8 +15,7 @@ namespace ECommerceIServices
         List<Product> GetAllProducts();
         List<Product> GetCategoryProducts(int categoryId);
         Product GetProduct(int productId);
-        List<Product> SearchProductsByName(string productName);
-        List<Product> FilterProducts(string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo);
+        List<Product> FilterProducts(string productName,string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo);
         Task AddOptionGroup(OptionGroup optionGroupModel);
         Task AddOption(Option optionModel);
         Task AddOptionToProduct(int productId, int optionId);

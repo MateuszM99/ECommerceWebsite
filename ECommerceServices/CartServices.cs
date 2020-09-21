@@ -19,7 +19,7 @@ namespace ECommerceServices
             this.appDb = appDb;
         }
 
-        public async Task<int> AddToCart(int? cartId, int productId)
+        public async Task<int> AddToCart(int? cartId, int productId,int? quantity)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
 
@@ -32,19 +32,24 @@ namespace ECommerceServices
 
             var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
 
+            if(quantity == null)
+            {
+                quantity = 1;
+            }
+
             if (cartProduct == null)
             {
                 cartProduct = new CartProduct()
                 {
                     CartId = cart.CartId,
                     ProductId = productId,
-                    Quantity = 1
+                    Quantity = (int)quantity
                 };
                 await appDb.CartProducts.AddAsync(cartProduct);
             }
             else
             {
-                cartProduct.Quantity++;
+                cartProduct.Quantity += (int)quantity;
             }
 
             await appDb.SaveChangesAsync();

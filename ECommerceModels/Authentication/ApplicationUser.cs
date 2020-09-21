@@ -9,9 +9,10 @@ using Microsoft.AspNetCore.Identity;
 namespace ECommerceModels.Authentication
 {
     public class ApplicationUser : IdentityUser
-    {
+    {     
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string Phone { get; set; }
         [ForeignKey("Standard")]
         public int AdresId { get; set; }
         public Address Address { get; set; }        

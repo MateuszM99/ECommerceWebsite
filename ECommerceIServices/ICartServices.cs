@@ -11,7 +11,7 @@ namespace ECommerceIServices
 {
     public interface ICartServices
     {
-        Task<int> AddToCart(int? cartId, int productId);
+        Task<int> AddToCart(int? cartId, int productId,int? quantity);
         Task<HttpResponseMessage> RemoveFromCart(int? cartId,int productId);
         List<ProductQuantity> GetCartProducts(int cartId);
         float GetCartPrice(int cartId);

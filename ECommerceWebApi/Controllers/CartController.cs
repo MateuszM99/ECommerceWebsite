@@ -33,10 +33,10 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpPost]
         [Route("addCart")]
-        public async Task<IActionResult> AddToCart(int? cartId,int productId)
+        public async Task<IActionResult> AddToCart(int? cartId,int productId,int? quantity)
         {         
            
-            var id = await cartServices.AddToCart(cartId, productId);
+            var id = await cartServices.AddToCart(cartId, productId,quantity);
 
             
             return Ok(new {
