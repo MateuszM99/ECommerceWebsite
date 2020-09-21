@@ -14,6 +14,7 @@ namespace ECommerceModels.Models
         public float ProductPrice { get; set; }
         public string ProductDescription { get; set; }
         public string ProductSKU { get; set; }
+        public string ImageUrl { get; set; }
         [ForeignKey("Standard")]
         public int? CategoryId { get; set; }       
         public Category Category { get; set; }

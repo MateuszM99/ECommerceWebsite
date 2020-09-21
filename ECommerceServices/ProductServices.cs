@@ -145,7 +145,11 @@ namespace ECommerceServices
 
         public List<Product> GetAllProducts()
         {
-            return appDb.Products.ToList();
+            return appDb.Products
+                        .Include(p => p.Category)
+                        .Include(p => p.ProductOptions)
+                            .ThenInclude(po => po.Option)
+                        .ToList();
         }
 
         public List<Product> GetCategoryProducts(int categoryId)

@@ -19,5 +19,10 @@ namespace ECommerceModels.Models
         public IList<OrderItem> OrderItems { get; set; }
         public int AddressId { get; set; }
         public Address Address { get; set; }
+        public string ClientEmail { get; set; }
+        public string ClientName { get; set; }
+        public string ClientSurname { get; set; }
+        public string ClientPhone { get; set; }
+        public bool isConfirmed { get; set; }
     }
 }

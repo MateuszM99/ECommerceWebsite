@@ -19,7 +19,7 @@ namespace ECommerceServices
         {
             this.appDb = appDb;
         }
-        public async Task createOrder(ApplicationUser user, int cartId, Address address)
+        public async Task createOrder(ApplicationUser user, int cartId, GuestUser guestUser, Address address)
         {
             // If there is no address and no user, return error
             if (address == null && user == null)
@@ -42,8 +42,18 @@ namespace ECommerceServices
                 ModifiedAt = DateTime.Now,
                 User = user,
                 Address = address,
-                OrderPrice = cart.TotalPrice
+                OrderPrice = cart.TotalPrice,
+                isConfirmed = false
             };
+
+            // if someone orders as a guest require additional info and put that into order
+            if(user == null)
+            {
+                order.ClientEmail = guestUser.Email;
+                order.ClientName = guestUser.Name;
+                order.ClientSurname = guestUser.Surname;
+                order.ClientPhone = guestUser.Phone;
+            }
 
             await appDb.Orders.AddAsync(order);
             await appDb.SaveChangesAsync();
@@ -61,8 +71,8 @@ namespace ECommerceServices
 
                 await appDb.OrderItems.AddAsync(orderItem);
             }
-            await appDb.SaveChangesAsync();
 
+            await appDb.SaveChangesAsync();
         }
 
         public async Task cancelOrder(int orderId)

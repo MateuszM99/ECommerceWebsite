@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -11,6 +12,7 @@ using ECommerceModels.Authentication;
 using ECommerceModels.Enums;
 using ECommerceModels.Models;
 using ECommerceModels.SpecificationPattern;
+using EllipticCurve.Utils;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -26,11 +28,13 @@ namespace ECommerceWebApi.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly ECommerceContext appDb;
         private readonly IProductServices productServices;
-        public ProductsController(UserManager<ApplicationUser> userManager, ECommerceContext appDb, IProductServices productServices)
+        private readonly IUploadServices uploadServices;
+        public ProductsController(UserManager<ApplicationUser> userManager, ECommerceContext appDb, IProductServices productServices, IUploadServices uploadServices)
         {
             this.userManager = userManager;
             this.appDb = appDb;
             this.productServices = productServices;
+            this.uploadServices = uploadServices;
         }
 
         [HttpPost]
@@ -67,6 +71,15 @@ namespace ECommerceWebApi.Controllers
             return productServices.GetAllProducts();
         }
 
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getCategories")]
+        public List<Category> GetCategories()
+        {
+            return appDb.Categories.ToList();
+        }
+
+        [EnableCors("Policy")]
         [HttpGet]
         [Route("products")]
         public List<Product> FilterProducts(string categoryName,string sortType,string orderType,Size? size,Color? color,float? priceFrom=0,float? priceTo=99999)
@@ -133,6 +146,19 @@ namespace ECommerceWebApi.Controllers
         public async Task<IActionResult> AddCategoryTo(int productId,int categoryId)
         {
             await productServices.AddCategoryToProduct(productId, categoryId);
+
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route("addImage")]
+        public async Task<IActionResult> AddImage(IFormFile imageFile,int productId)
+        {
+            
+
+            var file = HttpContext.Request.Form.Files[0];
+
+            await uploadServices.UploadingProductPhoto(file, productId);
 
             return Ok();
         }
