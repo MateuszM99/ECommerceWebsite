@@ -22,6 +22,8 @@ namespace ECommerceData
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
+        public DbSet<PaymentMethod> PaymentMethods { get; set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -42,6 +44,11 @@ namespace ECommerceData
                 .HasOne<ShoppingCart>(c => c.Cart)
                 .WithMany(p => p.CartProducts)
                 .HasForeignKey(c => c.CartId);
+
+            builder.Entity<CartProduct>()
+                .HasOne<Option>(o => o.Option)
+                .WithMany(c => c.CartProducts)
+                .HasForeignKey(o => o.OptionId);
 
             builder.Entity<ProductOption>()
                 .HasOne<Product>(p => p.Product)
@@ -80,6 +87,11 @@ namespace ECommerceData
                 .WithMany(o => o.OrderItems)
                 .HasForeignKey(o => o.OrderId);
 
+            builder.Entity<OrderItem>()
+               .HasOne<Option>(o => o.Option)
+               .WithMany(oi => oi.OrderItems)
+               .HasForeignKey(o => o.OptionId);
+
             builder.Entity<Order>()
                 .HasOne<ApplicationUser>(u => u.User)
                 .WithMany(o => o.Orders)
@@ -89,6 +101,16 @@ namespace ECommerceData
                 .HasOne<Address>(a => a.Address)
                 .WithMany(o => o.Orders)
                 .HasForeignKey(a => a.AddressId);
+
+            builder.Entity<Order>()
+                .HasOne<DeliveryMethod>(d => d.DeliveryMethod)
+                .WithMany(o => o.Orders)
+                .HasForeignKey(d => d.DeliveryMethodId);
+
+            builder.Entity<Order>()
+                .HasOne<PaymentMethod>(p => p.PaymentMethod)
+                .WithMany(o => o.Orders)
+                .HasForeignKey(p => p.PaymentMethodId);
         }
     }
 }

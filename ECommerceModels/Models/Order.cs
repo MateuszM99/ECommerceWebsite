@@ -23,6 +23,10 @@ namespace ECommerceModels.Models
         public string ClientName { get; set; }
         public string ClientSurname { get; set; }
         public string ClientPhone { get; set; }
+        public int DeliveryMethodId { get; set; }
+        public DeliveryMethod DeliveryMethod { get; set; }
+        public int PaymentMethodId { get; set; }
+        public PaymentMethod PaymentMethod { get; set; }
         public bool isConfirmed { get; set; }
     }
 }

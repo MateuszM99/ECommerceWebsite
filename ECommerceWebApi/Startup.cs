@@ -65,6 +65,7 @@ namespace ECommerceWebApi
             services.AddScoped<ICartServices, CartServices>();
             services.AddScoped<IProductServices, ProductServices>();
             services.AddScoped<IUploadServices, UploadServices>();
+            services.AddScoped<IOrderServices, OrderServices>();
             services.Configure<AuthSenderOptions>(Configuration);
 
             // Adding Authentication  

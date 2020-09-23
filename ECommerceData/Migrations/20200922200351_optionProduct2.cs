@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ECommerceData.Migrations
 {
-    public partial class init : Migration
+    public partial class optionProduct2 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -85,6 +85,7 @@ namespace ECommerceData.Migrations
                     AccessFailedCount = table.Column<int>(nullable: false),
                     FirstName = table.Column<string>(nullable: true),
                     LastName = table.Column<string>(nullable: true),
+                    Phone = table.Column<string>(nullable: true),
                     AdresId = table.Column<int>(nullable: false),
                     AddressAdresId = table.Column<int>(nullable: true)
                 },
@@ -130,6 +131,7 @@ namespace ECommerceData.Migrations
                     ProductPrice = table.Column<float>(nullable: false),
                     ProductDescription = table.Column<string>(nullable: true),
                     ProductSKU = table.Column<string>(nullable: true),
+                    ImageUrl = table.Column<string>(nullable: true),
                     CategoryId = table.Column<int>(nullable: true),
                     AddedAt = table.Column<DateTime>(nullable: false)
                 },
@@ -151,7 +153,7 @@ namespace ECommerceData.Migrations
                     OptionId = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     OptionName = table.Column<string>(nullable: true),
-                    OptionGroupId = table.Column<int>(nullable: false)
+                    OptionGroupId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -161,7 +163,7 @@ namespace ECommerceData.Migrations
                         column: x => x.OptionGroupId,
                         principalTable: "OptionGroups",
                         principalColumn: "OptionGroupId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -280,7 +282,12 @@ namespace ECommerceData.Migrations
                     OrderDate = table.Column<DateTime>(nullable: false),
                     ModifiedAt = table.Column<DateTime>(nullable: false),
                     UserId = table.Column<string>(nullable: true),
-                    AddressId = table.Column<int>(nullable: false)
+                    AddressId = table.Column<int>(nullable: false),
+                    ClientEmail = table.Column<string>(nullable: true),
+                    ClientName = table.Column<string>(nullable: true),
+                    ClientSurname = table.Column<string>(nullable: true),
+                    ClientPhone = table.Column<string>(nullable: true),
+                    isConfirmed = table.Column<bool>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -329,7 +336,8 @@ namespace ECommerceData.Migrations
                 {
                     CartId = table.Column<int>(nullable: false),
                     ProductId = table.Column<int>(nullable: false),
-                    Quantity = table.Column<int>(nullable: false)
+                    Quantity = table.Column<int>(nullable: false),
+                    OptionId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -341,6 +349,12 @@ namespace ECommerceData.Migrations
                         principalColumn: "CartId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
+                        name: "FK_CartProducts_Options_OptionId",
+                        column: x => x.OptionId,
+                        principalTable: "Options",
+                        principalColumn: "OptionId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
                         name: "FK_CartProducts_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
@@ -349,24 +363,31 @@ namespace ECommerceData.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderItem",
+                name: "OrderItems",
                 columns: table => new
                 {
                     OrderId = table.Column<int>(nullable: false),
                     ProductId = table.Column<int>(nullable: false),
-                    Quantity = table.Column<int>(nullable: false)
+                    Quantity = table.Column<int>(nullable: false),
+                    OptionId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderItem", x => new { x.OrderId, x.ProductId });
+                    table.PrimaryKey("PK_OrderItems", x => new { x.OrderId, x.ProductId });
                     table.ForeignKey(
-                        name: "FK_OrderItem_Orders_OrderId",
+                        name: "FK_OrderItems_Options_OptionId",
+                        column: x => x.OptionId,
+                        principalTable: "Options",
+                        principalColumn: "OptionId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_OrderItems_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "OrderId",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderItem_Products_ProductId",
+                        name: "FK_OrderItems_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
                         principalColumn: "ProductId",
@@ -418,6 +439,11 @@ namespace ECommerceData.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_CartProducts_OptionId",
+                table: "CartProducts",
+                column: "OptionId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_CartProducts_ProductId",
                 table: "CartProducts",
                 column: "ProductId");
@@ -435,8 +461,13 @@ namespace ECommerceData.Migrations
                 column: "OptionGroupId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItem_ProductId",
-                table: "OrderItem",
+                name: "IX_OrderItems_OptionId",
+                table: "OrderItems",
+                column: "OptionId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_OrderItems_ProductId",
+                table: "OrderItems",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
@@ -481,7 +512,7 @@ namespace ECommerceData.Migrations
                 name: "CartProducts");
 
             migrationBuilder.DropTable(
-                name: "OrderItem");
+                name: "OrderItems");
 
             migrationBuilder.DropTable(
                 name: "ProductOption");

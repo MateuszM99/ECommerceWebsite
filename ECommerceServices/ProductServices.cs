@@ -166,7 +166,7 @@ namespace ECommerceServices
 
         public Product GetProduct(int productId)
         {
-            return appDb.Products.Find(productId);
+            return appDb.Products.Include(p => p.ProductOptions).Where(p => p.ProductId == productId).FirstOrDefault();
         }
     }
 }

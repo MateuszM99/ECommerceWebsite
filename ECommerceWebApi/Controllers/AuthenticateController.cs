@@ -77,6 +77,7 @@ namespace ECommerceWebApi.Controllers
 
                 return Ok(new
                 {
+                    user.UserName,
                     token = new JwtSecurityTokenHandler().WriteToken(token),
                     expiration = token.ValidTo
                 });
@@ -95,6 +96,9 @@ namespace ECommerceWebApi.Controllers
 
             ApplicationUser user = new ApplicationUser()
             {
+                FirstName = model.FirstName,
+                LastName = model.LastName,
+                Phone = model.Phone,
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username

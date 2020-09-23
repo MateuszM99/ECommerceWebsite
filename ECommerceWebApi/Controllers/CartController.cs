@@ -33,32 +33,40 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpPost]
         [Route("addCart")]
-        public async Task<IActionResult> AddToCart(int? cartId,int productId,int? quantity)
-        {         
-           
-            var id = await cartServices.AddToCart(cartId, productId,quantity);
+        public async Task<IActionResult> AddToCart(int? cartId,int productId,int? quantity,string optionName)
+        {                               
+            var cartResponse = await cartServices.AddToCart(cartId, productId,quantity,optionName);
 
-            
+            // If function has any errors
+            if (cartResponse.ErrorMessage != null)
+                return StatusCode(StatusCodes.Status400BadRequest,cartResponse.ErrorMessage);
+
             return Ok(new {
-                id
+                cartResponse.CartId,cartResponse.SuccessMessage
             });            
         }
 
         [EnableCors("Policy")]
         [HttpPost]
         [Route("removeCart")]
-        public async Task<HttpResponseMessage> RemoveFromCart(int cartId,int productId)
+        public async Task<IActionResult> RemoveFromCart(int cartId,int productId)
         {
              
-             var result = await cartServices.RemoveFromCart(cartId, productId);
+             var cartResponse = await cartServices.RemoveFromCart(cartId, productId);
 
-             return result;
-         }
+            if (cartResponse.ErrorMessage != null)
+                return StatusCode(StatusCodes.Status400BadRequest, cartResponse.ErrorMessage);
+
+            return Ok(new
+            {            
+                cartResponse.SuccessMessage
+            });
+        }
 
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getCart")]
-        public List<ProductQuantity> getCartProducts(int cartId)
+        public List<ProductOptionQuantity> getCartProducts(int cartId)
         {
             return cartServices.GetCartProducts(cartId);
         }
@@ -68,7 +76,7 @@ namespace ECommerceWebApi.Controllers
         [Route("getCartCount")]
         public int getCartProductsCount(int cartId)
         {
-            List<ProductQuantity> productQuantities = cartServices.GetCartProducts(cartId);
+            List<ProductOptionQuantity> productQuantities = cartServices.GetCartProducts(cartId);
 
             int count = 0;
 

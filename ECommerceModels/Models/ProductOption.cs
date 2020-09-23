@@ -10,5 +10,6 @@ namespace ECommerceModels.Models
         public Product Product { get; set; }
         public int OptionId { get; set; }
         public Option Option { get; set; }
+        public int ProductStock { get; set; }
     }
 }

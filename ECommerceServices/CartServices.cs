@@ -19,9 +19,20 @@ namespace ECommerceServices
             this.appDb = appDb;
         }
 
-        public async Task<int> AddToCart(int? cartId, int productId,int? quantity)
+        public async Task<CartResponse> AddToCart(int? cartId, int productId,int? quantity,string optionName)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
+            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
+            var productOption = await appDb.Options.Where(o => o.OptionName == optionName).FirstOrDefaultAsync();
+
+            // If null return error indicator
+            if (productOption == null)
+                return new CartResponse { ErrorMessage = "Option not found" };
+
+            var productStock = appDb.ProductOption.Where(p => p.ProductId == productId && p.OptionId == productOption.OptionId).Select(p => p.ProductStock).FirstOrDefault();
+
+            if (productStock < quantity)
+                return new CartResponse { ErrorMessage = "Not enough products in stock" };
 
             if (cart == null)
             {
@@ -29,13 +40,12 @@ namespace ECommerceServices
                 await appDb.AddAsync(cart);
                 await appDb.SaveChangesAsync();
             }
-
-            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
-
+                      
             if(quantity == null)
             {
                 quantity = 1;
             }
+         
 
             if (cartProduct == null)
             {
@@ -43,7 +53,9 @@ namespace ECommerceServices
                 {
                     CartId = cart.CartId,
                     ProductId = productId,
-                    Quantity = (int)quantity
+                    Quantity = (int)quantity,
+                    OptionId = productOption.OptionId,
+                    Option = productOption
                 };
                 await appDb.CartProducts.AddAsync(cartProduct);
             }
@@ -57,23 +69,23 @@ namespace ECommerceServices
             cart.TotalPrice = GetCartPrice(cart.CartId);
             await appDb.SaveChangesAsync();
 
-            return cart.CartId;
+            return new CartResponse { CartId = cart.CartId, SuccessMessage = "Succesfully added product to cart"};
         }
 
-        public async Task<HttpResponseMessage> RemoveFromCart(int? cartId, int productId)
+        public async Task<CartResponse> RemoveFromCart(int? cartId, int productId)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
 
             if (cart == null)
             {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.MethodNotAllowed);
+                return new CartResponse {ErrorMessage = "You must specify cart id" };
             }
 
             var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
 
             if (cartProduct == null)
             {
-                return new HttpResponseMessage(System.Net.HttpStatusCode.MethodNotAllowed);
+                return new CartResponse { ErrorMessage = "Not found product with given id" };
             }
 
             if (cartProduct.Quantity <= 1)
@@ -86,11 +98,10 @@ namespace ECommerceServices
             }
 
             await appDb.SaveChangesAsync();
-
             cart.TotalPrice = GetCartPrice(cart.CartId);
             await appDb.SaveChangesAsync();
 
-            return new HttpResponseMessage(System.Net.HttpStatusCode.OK);
+            return new CartResponse { SuccessMessage = "Succesfully removed item from cart" };
         }
 
         public float GetCartPrice(int cartId)
@@ -101,10 +112,10 @@ namespace ECommerceServices
                         .Sum();
         }
 
-        public List<ProductQuantity> GetCartProducts(int cartId)
+        public List<ProductOptionQuantity> GetCartProducts(int cartId)
         {
-            var products = appDb.CartProducts.Where(c => c.CartId == cartId)
-                .Select(p => new ProductQuantity(p.Product, p.Quantity)).ToList();
+            var products = appDb.CartProducts.Include(cp => cp.Option).Where(c => c.CartId == cartId)
+                .Select(p => new ProductOptionQuantity(p.Product, p.Quantity,p.Option)).ToList();
 
             return products;
         }          

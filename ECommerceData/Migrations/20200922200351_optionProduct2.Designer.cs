@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerceData.Migrations
 {
     [DbContext(typeof(ECommerceContext))]
-    [Migration("20200913124847_init")]
-    partial class init
+    [Migration("20200922200351_optionProduct2")]
+    partial class optionProduct2
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -67,6 +67,9 @@ namespace ECommerceData.Migrations
                         .HasMaxLength(256);
 
                     b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PhoneNumber")
@@ -135,10 +138,15 @@ namespace ECommerceData.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("OptionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.HasKey("CartId", "ProductId");
+
+                    b.HasIndex("OptionId");
 
                     b.HasIndex("ProductId");
 
@@ -167,7 +175,7 @@ namespace ECommerceData.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int>("OptionGroupId")
+                    b.Property<int?>("OptionGroupId")
                         .HasColumnType("int");
 
                     b.Property<string>("OptionName")
@@ -205,6 +213,18 @@ namespace ECommerceData.Migrations
                     b.Property<int>("AddressId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ClientEmail")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientPhone")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClientSurname")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTime>("ModifiedAt")
                         .HasColumnType("datetime2");
 
@@ -219,6 +239,9 @@ namespace ECommerceData.Migrations
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("isConfirmed")
+                        .HasColumnType("bit");
 
                     b.HasKey("OrderId");
 
@@ -237,14 +260,19 @@ namespace ECommerceData.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("OptionId")
+                        .HasColumnType("int");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
                     b.HasKey("OrderId", "ProductId");
 
+                    b.HasIndex("OptionId");
+
                     b.HasIndex("ProductId");
 
-                    b.ToTable("OrderItem");
+                    b.ToTable("OrderItems");
                 });
 
             modelBuilder.Entity("ECommerceModels.Models.Product", b =>
@@ -259,6 +287,9 @@ namespace ECommerceData.Migrations
 
                     b.Property<int?>("CategoryId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ProductDescription")
                         .HasColumnType("nvarchar(max)");
@@ -462,6 +493,12 @@ namespace ECommerceData.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("ECommerceModels.Models.Option", "Option")
+                        .WithMany("CartProducts")
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ECommerceModels.Models.Product", "Product")
                         .WithMany("CartProducts")
                         .HasForeignKey("ProductId")
@@ -473,9 +510,7 @@ namespace ECommerceData.Migrations
                 {
                     b.HasOne("ECommerceModels.Models.OptionGroup", "OptionGroup")
                         .WithMany("Options")
-                        .HasForeignKey("OptionGroupId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("OptionGroupId");
                 });
 
             modelBuilder.Entity("ECommerceModels.Models.Order", b =>
@@ -493,6 +528,12 @@ namespace ECommerceData.Migrations
 
             modelBuilder.Entity("ECommerceModels.Models.OrderItem", b =>
                 {
+                    b.HasOne("ECommerceModels.Models.Option", "Option")
+                        .WithMany("OrderItems")
+                        .HasForeignKey("OptionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("ECommerceModels.Models.Order", "Order")
                         .WithMany("OrderItems")
                         .HasForeignKey("OrderId")
