@@ -10,6 +10,7 @@ using EllipticCurve;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json.Linq;
 
 namespace ECommerceWebApi.Controllers
 {
@@ -28,8 +29,13 @@ namespace ECommerceWebApi.Controllers
             this.orderServices = orderServices;
         }
 
-        public async Task<IActionResult> createOrder(ApplicationUser user, int cartId, GuestUser guestUser, Address address, int deliveryId, int paymentId)
+        public async Task<IActionResult> createOrder([FromBody]JObject models, int cartId, int deliveryId, int paymentId)
         {
+
+            ApplicationUser user = models.ToObject<ApplicationUser>();
+            GuestUser guestUser = models.ToObject<GuestUser>();
+            Address address = models.ToObject<Address>();
+
             var orderResponse = await orderServices.createOrder(user, cartId, guestUser, address, deliveryId, paymentId);
 
             if (orderResponse.ErrorMessage != null)

@@ -7,6 +7,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
+using ECommerceModels.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -70,14 +72,14 @@ namespace ECommerceWebApi.Controllers
                 var token = new JwtSecurityToken(
                     issuer: _configuration["JWT:ValidIssuer"],
                     audience: _configuration["JWT:ValidAudience"],
-                    expires: DateTime.Now.AddHours(3),
+                    expires: DateTime.Now.AddHours(24),
                     claims: authClaims,
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                     );
 
                 return Ok(new
                 {
-                    user.UserName,
+                    user,
                     token = new JwtSecurityTokenHandler().WriteToken(token),
                     expiration = token.ValidTo
                 });
@@ -98,7 +100,7 @@ namespace ECommerceWebApi.Controllers
             {
                 FirstName = model.FirstName,
                 LastName = model.LastName,
-                Phone = model.Phone,
+                PhoneNumber = model.Phone,
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username
@@ -182,5 +184,55 @@ namespace ECommerceWebApi.Controllers
 
             return Ok(new Response { Status = "Success", Message = "Message sent!" });
         }
+
+        [HttpPost]
+        [Authorize]
+        [Route("editUser")]
+        public async Task<IActionResult> EditUserInfo([FromBody] EditUserModel userModel,string username)
+        {
+            var user = await userManager.FindByNameAsync(username);
+            if (user != null)
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User doesn't exist!" });
+
+            if (userModel.FirstName != null)
+                user.FirstName = userModel.FirstName;
+            if (userModel.LastName != null)
+                user.LastName = userModel.LastName;
+            if (userModel.Email != null)
+                user.Email = userModel.Email;
+            if (userModel.Phone != null)
+                user.PhoneNumber = userModel.Phone;
+
+            await userManager.UpdateAsync(user);
+
+            return Ok(new Response { Status = "Success", Message = "Changes saved successfully" });
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("editAddress")]
+        public async Task<IActionResult> EditAddressInfo([FromBody]Address addressModel, string username)
+        {
+            var user = await userManager.FindByNameAsync(username);
+            if (user != null)
+                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User doesn't exist!" });
+
+            if (addressModel.Street != null)
+                user.Address.Street = addressModel.Street;
+            if (addressModel.Country != null)
+                user.Address.Country = addressModel.Country;
+            if (addressModel.City != null)
+                user.Address.City = addressModel.City;
+            if (addressModel.PostCode != null)
+                user.Address.PostCode = addressModel.PostCode;
+            if (addressModel.HouseNumber != null)
+                user.Address.HouseNumber = addressModel.HouseNumber;
+
+            await userManager.UpdateAsync(user);
+
+            return Ok(new Response { Status = "Success", Message = "Changes saved successfully" });
+        }
+
+
     }
 }
