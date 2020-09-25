@@ -48,7 +48,8 @@ namespace ECommerceWebApi
                                   {
                                       builder.WithOrigins("http://localhost:3000")
                                                         .AllowAnyHeader()
-                                                        .AllowAnyMethod();
+                                                        .AllowAnyMethod()
+                                                        .AllowCredentials();                                                       
                                   });
             });
 
@@ -75,7 +76,6 @@ namespace ECommerceWebApi
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
-
             // Adding Jwt Bearer  
             .AddJwtBearer(options =>
             {
@@ -104,7 +104,11 @@ namespace ECommerceWebApi
 
             app.UseRouting();
 
+            app.UseAuthentication();
+
             app.UseAuthorization();
+
+            
 
             app.UseCors();         
 

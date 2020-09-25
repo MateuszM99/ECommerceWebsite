@@ -35,6 +35,9 @@ namespace ECommerceWebApi.Controllers
             this.emailSender = emailSender;
         }
 
+        [Authorize]
+        [HttpGet]
+        [Route("getToken")]
         public IActionResult getSessionToken()
         {
             string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
@@ -184,14 +187,15 @@ namespace ECommerceWebApi.Controllers
 
             return Ok(new Response { Status = "Success", Message = "Message sent!" });
         }
-
+     
+        [EnableCors("Policy")]
         [HttpPost]
         [Authorize]
         [Route("editUser")]
         public async Task<IActionResult> EditUserInfo([FromBody] EditUserModel userModel,string username)
         {
             var user = await userManager.FindByNameAsync(username);
-            if (user != null)
+            if (user == null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User doesn't exist!" });
 
             if (userModel.FirstName != null)
