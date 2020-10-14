@@ -20,6 +20,9 @@ using System.Text;
 using ECommerceIServices;
 using ECommerceServices;
 using ECommerceModels.Models;
+using System.Reflection;
+using AutoMapper;
+using ECommerceWebApi.Maps;
 
 namespace ECommerceWebApi
 {
@@ -48,7 +51,8 @@ namespace ECommerceWebApi
                                   {
                                       builder.WithOrigins("http://localhost:3000")
                                                         .AllowAnyHeader()
-                                                        .AllowAnyMethod();
+                                                        .AllowAnyMethod()
+                                                        .AllowCredentials();
                                   });
             });
 
@@ -67,6 +71,15 @@ namespace ECommerceWebApi
             services.AddScoped<IUploadServices, UploadServices>();
             services.AddScoped<IOrderServices, OrderServices>();
             services.Configure<AuthSenderOptions>(Configuration);
+
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new ProductProfile());
+                mc.AddProfile(new OptionProfile());
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+            services.AddSingleton(mapper);
 
             // Adding Authentication  
             services.AddAuthentication(options =>
@@ -104,9 +117,11 @@ namespace ECommerceWebApi
 
             app.UseRouting();
 
-            app.UseAuthorization();
+            app.UseCors();
 
-            app.UseCors();         
+            app.UseAuthentication();
+
+            app.UseAuthorization();          
 
             app.UseEndpoints(endpoints =>
             {

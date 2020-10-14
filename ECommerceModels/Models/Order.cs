@@ -9,14 +9,14 @@ namespace ECommerceModels.Models
     public class Order
     {
         [Key]
-        public int OrderId { get; set; }
-        public string OrderStatus { get; set; }
-        public double OrderPrice { get; set; }
-        public DateTime OrderDate { get; set; }
+        public int Id { get; set; }
+        public string Status { get; set; }
+        public double Price { get; set; }
+        public DateTime AddedAt { get; set; }
         public DateTime ModifiedAt { get; set; }
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
-        public IList<OrderItem> OrderItems { get; set; }
+        public IList<OrderItem> Items { get; set; }
         public int AddressId { get; set; }
         public Address Address { get; set; }
         public string ClientEmail { get; set; }

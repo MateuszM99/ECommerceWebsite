@@ -26,18 +26,16 @@ namespace ECommerceServices
             Configuration = configuration;
         }       
 
-        public async Task UploadingProductPhoto(IFormFile imageFile, int productId)
+        public async Task UploadProductPhotoAsync(IFormFile imageFile,Product product)
         {         
             Account cloudinaryAccount = new Account(Configuration["Cloudinary:CloudName"], Configuration["Cloudinary:CloudApiKey"], Configuration["Cloudinary:CloudApiKeySecret"]);
         
             Cloudinary cloudinary = new Cloudinary(cloudinaryAccount);
-
-            var product = await appDb.Products.FindAsync(productId);
-       
+                   
             var uploadParams = new ImageUploadParams()
             {
-                File = new FileDescription(product.ProductName,imageFile.OpenReadStream()),
-                PublicId = String.Format("EcommerceWebsite/productPhotos/{0}",productId),
+                File = new FileDescription(product.Name,imageFile.OpenReadStream()),
+                PublicId = String.Format("EcommerceWebsite/productPhotos/{0}",product.Id),
                 Overwrite = true                
             };
 

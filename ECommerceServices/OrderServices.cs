@@ -54,12 +54,12 @@ namespace ECommerceServices
 
             Order order = new Order
             {
-                OrderStatus = "New order",
-                OrderDate = DateTime.Now,
+                Status = "New order",
+                AddedAt = DateTime.Now,
                 ModifiedAt = DateTime.Now,
                 User = user,
                 Address = address,
-                OrderPrice = cart.TotalPrice,
+                Price = cart.TotalPrice,
                 isConfirmed = false,
                 DeliveryMethod = deliveryMethod,
                 PaymentMethod = paymentMethod
@@ -86,7 +86,7 @@ namespace ECommerceServices
             {
                 OrderItem orderItem = new OrderItem
                 {
-                    OrderId = order.OrderId,
+                    OrderId = order.Id,
                     ProductId = cartItem.ProductId,
                     Quantity = cartItem.Quantity,
                     Option = cartItem.Option
@@ -110,7 +110,7 @@ namespace ECommerceServices
         {
             var order = await appDb.Orders.FindAsync(orderId);
 
-            foreach(var orderItem in order.OrderItems)
+            foreach(var orderItem in order.Items)
             {
                 // add the amount of ordered products to product stock
                 var product = await appDb.ProductOption.FindAsync(orderItem.ProductId, orderItem.OptionId);

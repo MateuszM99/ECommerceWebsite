@@ -9,8 +9,8 @@ namespace ECommerceModels.Models
     public class Option
     {
         [Key]
-        public int OptionId { get; set; }
-        public string OptionName { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
         public IList<ProductOption> ProductOptions { get; set; }
         public IList<CartProduct> CartProducts { get; set; }
         public IList<OrderItem> OrderItems { get; set; }

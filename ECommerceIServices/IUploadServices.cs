@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ECommerceModels.Models;
+using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
 
 namespace ECommerceIServices
 {
     public interface IUploadServices
     {
-        Task UploadingProductPhoto(IFormFile imageFile,int productId);
+        Task UploadProductPhotoAsync(IFormFile imageFile,Product product);
     }
 }

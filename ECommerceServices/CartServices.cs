@@ -22,17 +22,17 @@ namespace ECommerceServices
         public async Task<CartResponse> AddToCart(int? cartId, int productId,int? quantity,string optionName)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
-            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
-            var productOption = await appDb.Options.Where(o => o.OptionName == optionName).FirstOrDefaultAsync();
+            var cartProduct = await appDb.CartProducts.FindAsync(cart.Id, productId);
+            var productOption = await appDb.Options.Where(o => o.Name == optionName).FirstOrDefaultAsync();
 
             // If null return error indicator
             if (productOption == null)
-                return new CartResponse { ErrorMessage = "Option not found" };
+                return new CartResponse { Status="Error", Message = "Option not found" };
 
-            var productStock = appDb.ProductOption.Where(p => p.ProductId == productId && p.OptionId == productOption.OptionId).Select(p => p.ProductStock).FirstOrDefault();
+            var productStock = appDb.ProductOption.Where(p => p.ProductId == productId && p.OptionId == productOption.Id).Select(p => p.ProductStock).FirstOrDefault();
 
             if (productStock < quantity)
-                return new CartResponse { ErrorMessage = "Not enough products in stock" };
+                return new CartResponse { Status = "Error", Message = "Not enough products in stock" };
 
             if (cart == null)
             {
@@ -51,10 +51,10 @@ namespace ECommerceServices
             {
                 cartProduct = new CartProduct()
                 {
-                    CartId = cart.CartId,
+                    CartId = cart.Id,
                     ProductId = productId,
                     Quantity = (int)quantity,
-                    OptionId = productOption.OptionId,
+                    OptionId = productOption.Id,
                     Option = productOption
                 };
                 await appDb.CartProducts.AddAsync(cartProduct);
@@ -66,10 +66,10 @@ namespace ECommerceServices
 
             await appDb.SaveChangesAsync();
 
-            cart.TotalPrice = GetCartPrice(cart.CartId);
+            cart.TotalPrice = GetCartPrice(cart.Id);
             await appDb.SaveChangesAsync();
 
-            return new CartResponse { CartId = cart.CartId, SuccessMessage = "Succesfully added product to cart"};
+            return new CartResponse { CartId = cart.Id,Status="Success",Message = "Succesfully added product to cart"};
         }
 
         public async Task<CartResponse> RemoveFromCart(int? cartId, int productId)
@@ -78,14 +78,14 @@ namespace ECommerceServices
 
             if (cart == null)
             {
-                return new CartResponse {ErrorMessage = "You must specify cart id" };
+                return new CartResponse { Status = "Error", Message = "You must specify cart id" };
             }
 
-            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
+            var cartProduct = await appDb.CartProducts.FindAsync(cart.Id, productId);
 
             if (cartProduct == null)
             {
-                return new CartResponse { ErrorMessage = "Not found product with given id" };
+                return new CartResponse { Status = "Error", Message = "Not found product with given id" };
             }
 
             if (cartProduct.Quantity <= 1)
@@ -98,17 +98,17 @@ namespace ECommerceServices
             }
 
             await appDb.SaveChangesAsync();
-            cart.TotalPrice = GetCartPrice(cart.CartId);
+            cart.TotalPrice = GetCartPrice(cart.Id);
             await appDb.SaveChangesAsync();
 
-            return new CartResponse { SuccessMessage = "Succesfully removed item from cart" };
+            return new CartResponse { Status = "Success", Message = "Succesfully removed item from cart" };
         }
 
         public float GetCartPrice(int cartId)
         {
             return appDb.CartProducts
                         .Where(x => x.CartId == cartId)
-                        .Select(x => x.Product.ProductPrice * x.Quantity)
+                        .Select(x => x.Product.Price * x.Quantity)
                         .Sum();
         }
 

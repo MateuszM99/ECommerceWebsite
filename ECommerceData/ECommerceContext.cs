@@ -60,6 +60,11 @@ namespace ECommerceData
                .WithMany(po => po.ProductOptions)
                .HasForeignKey(o => o.OptionId);
 
+            builder.Entity<ApplicationUser>()
+                .HasOne(a => a.Address)
+                .WithMany(a => a.ApplicationUsers)
+                .HasForeignKey(a => a.AdresId);
+
             builder.Entity<Address>()
                 .HasMany(u => u.ApplicationUsers)
                 .WithOne(a => a.Address);
@@ -84,7 +89,7 @@ namespace ECommerceData
 
             builder.Entity<OrderItem>()
                 .HasOne<Order>(o => o.Order)
-                .WithMany(o => o.OrderItems)
+                .WithMany(o => o.Items)
                 .HasForeignKey(o => o.OrderId);
 
             builder.Entity<OrderItem>()

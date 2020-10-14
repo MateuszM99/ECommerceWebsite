@@ -38,11 +38,11 @@ namespace ECommerceWebApi.Controllers
             var cartResponse = await cartServices.AddToCart(cartId, productId,quantity,optionName);
 
             // If function has any errors
-            if (cartResponse.ErrorMessage != null)
-                return StatusCode(StatusCodes.Status400BadRequest,cartResponse.ErrorMessage);
+            if (cartResponse.Status == "Error")
+                return StatusCode(StatusCodes.Status400BadRequest,cartResponse.Message);
 
             return Ok(new {
-                cartResponse.CartId,cartResponse.SuccessMessage
+                cartResponse.CartId,cartResponse.Message
             });            
         }
 
@@ -54,12 +54,12 @@ namespace ECommerceWebApi.Controllers
              
              var cartResponse = await cartServices.RemoveFromCart(cartId, productId);
 
-            if (cartResponse.ErrorMessage != null)
-                return StatusCode(StatusCodes.Status400BadRequest, cartResponse.ErrorMessage);
+            if (cartResponse.Status == "Error")
+                return StatusCode(StatusCodes.Status400BadRequest, cartResponse.Message);
 
             return Ok(new
             {            
-                cartResponse.SuccessMessage
+                cartResponse.Message
             });
         }
 

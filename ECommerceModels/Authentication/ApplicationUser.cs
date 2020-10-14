@@ -13,7 +13,7 @@ namespace ECommerceModels.Authentication
         public string FirstName { get; set; }
         public string LastName { get; set; }
         [ForeignKey("Standard")]
-        public int AdresId { get; set; }
+        public int? AdresId { get; set; }
         public Address Address { get; set; }        
         public ShoppingCart Cart { get; set; }
         public IList<Order> Orders { get; set; }

@@ -9,7 +9,7 @@ namespace ECommerceModels.Models
     public class Address
     {
         [Key]
-        public int AdresId { get; set; }
+        public int Id { get; set; }
         public string Country { get; set; }
         public string City { get; set; }
         public string Street { get; set; }
