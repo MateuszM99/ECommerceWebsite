@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ECommerceData.Migrations
 {
-    public partial class init : Migration
+    public partial class dataseed : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -157,8 +157,8 @@ namespace ECommerceData.Migrations
                     Description = table.Column<string>(nullable: true),
                     SKU = table.Column<string>(nullable: true),
                     ImageUrl = table.Column<string>(nullable: true),
-                    CategoryId = table.Column<int>(nullable: true),
-                    AddedAt = table.Column<DateTime>(nullable: false)
+                    AddedAt = table.Column<DateTime>(nullable: false),
+                    CategoryId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -302,19 +302,19 @@ namespace ECommerceData.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Status = table.Column<string>(nullable: true),
+                    Status = table.Column<int>(nullable: false),
                     Price = table.Column<double>(nullable: false),
                     AddedAt = table.Column<DateTime>(nullable: false),
                     ModifiedAt = table.Column<DateTime>(nullable: false),
-                    UserId = table.Column<string>(nullable: true),
-                    AddressId = table.Column<int>(nullable: false),
                     ClientEmail = table.Column<string>(nullable: true),
                     ClientName = table.Column<string>(nullable: true),
                     ClientSurname = table.Column<string>(nullable: true),
                     ClientPhone = table.Column<string>(nullable: true),
+                    isConfirmed = table.Column<bool>(nullable: false),
+                    UserId = table.Column<string>(nullable: true),
+                    AddressId = table.Column<int>(nullable: false),
                     DeliveryMethodId = table.Column<int>(nullable: false),
-                    PaymentMethodId = table.Column<int>(nullable: false),
-                    isConfirmed = table.Column<bool>(nullable: false)
+                    PaymentMethodId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -432,6 +432,33 @@ namespace ECommerceData.Migrations
                         principalTable: "Products",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "OptionGroups",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 1, "size" });
+
+            migrationBuilder.InsertData(
+                table: "OptionGroups",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 2, "color" });
+
+            migrationBuilder.InsertData(
+                table: "Options",
+                columns: new[] { "Id", "Name", "OptionGroupId" },
+                values: new object[,]
+                {
+                    { 1, "XS", 1 },
+                    { 2, "S", 1 },
+                    { 3, "M", 1 },
+                    { 4, "L", 1 },
+                    { 5, "XL", 1 },
+                    { 6, "XXL", 1 },
+                    { 7, "black", 2 },
+                    { 8, "white", 2 },
+                    { 9, "gray", 2 },
+                    { 10, "red", 2 }
                 });
 
             migrationBuilder.CreateIndex(

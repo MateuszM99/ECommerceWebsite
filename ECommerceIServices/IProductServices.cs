@@ -13,14 +13,14 @@ namespace ECommerceIServices
     {
         Task CreateProductAsync(ProductDTO productModel, IFormFile productImage);
         Task DeleteProductAsync(int productId);
-        Task EditProductAsync(ProductDTO productModel,IFormFile productImage);
+        Task<Product> EditProductAsync(ProductDTO productModel,IFormFile productImage);
         Task<List<Product>> GetAllProductsAsync();        
         Task<Product> GetProductAsync(int productId);
         Task<List<Product>> FilterProductsAsync(string productName,string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo);
         Task AddOptionGroupAsync(OptionGroupDTO optionGroupModel);
         Task AddOptionAsync(OptionDTO optionModel);
         Task AddOptionToProduct(int productId, int optionId);
-        Task AddCategory(Category categoryModel);
+        Task AddCategoryAsync(CategoryDTO categoryModel);
         Task AddCategoryToProduct(int productId, int categoryId);
     }
 }

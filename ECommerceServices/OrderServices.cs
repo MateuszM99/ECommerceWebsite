@@ -1,86 +1,115 @@
-﻿using ECommerceData;
+﻿using AutoMapper;
+using ECommerceData;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
+using ECommerceModels.DTOs;
+using ECommerceModels.Enums;
 using ECommerceModels.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace ECommerceServices
 {
     public class OrderServices : IOrderServices
     {
+        private readonly ILogger<OrderServices> logger;
         private readonly ECommerceContext appDb;
-        public OrderServices(ECommerceContext appDb)
+        private readonly IMapper mapper;
+        public OrderServices(ECommerceContext appDb,ILogger<OrderServices> logger,IMapper mapper)
         {
+            this.logger = logger;
             this.appDb = appDb;
+            this.mapper = mapper;
         }
-        public async Task<OrderResponse> createOrder(ApplicationUser user, int cartId, GuestUser guestUser, Address address,int deliveryId,int paymentId)
+       
+        public async Task createOrderUser(OrderDTO orderModel,ApplicationUser user)
         {
-            
-            // If there is no address and no user, return error
-            if (address == null && user == null)
+            logger.LogInformation($"Starting method {nameof(createOrderGuest)}.");
+
+            if (user == null)
             {
-                return new OrderResponse { ErrorMessage = "You must specify delivery address"};
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The user is not found, check if you are logged in")
+                };
+                throw new HttpResponseException(message);
             }
 
-            // If there is no address but user is not null use users Address
-            if (address == null && user != null)
+            if (user.Address == null)
             {
-                if(user.Address == null)
-                    return new OrderResponse { ErrorMessage = "No delivery address specified" };
-                
-                address = user.Address;
+                if (orderModel.Address == null)
+                {
+                    var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                    {
+                        Content = new StringContent($"The order is missing address details, please check if you filled all the details")
+                    };
+                    throw new HttpResponseException(message);
+                }
             }
 
-            var cart = await appDb.Carts.FindAsync(cartId);
-
-            if(cart == null)
-                return new OrderResponse { ErrorMessage = "Could not find a cart" };
-
-            var deliveryMethod = await appDb.DeliveryMethods.FindAsync(deliveryId);
-
-            if(deliveryMethod == null)
-                return new OrderResponse { ErrorMessage = "Could not find this delivery method" };
-
-            var paymentMethod = await appDb.PaymentMethods.FindAsync(paymentId);
-
-            if(paymentMethod == null)
-                return new OrderResponse { ErrorMessage = "Could not find this payment method" };
-
-            Order order = new Order
+            if (orderModel.DeliveryMethodId == null)
             {
-                Status = "New order",
-                AddedAt = DateTime.Now,
-                ModifiedAt = DateTime.Now,
-                User = user,
-                Address = address,
-                Price = cart.TotalPrice,
-                isConfirmed = false,
-                DeliveryMethod = deliveryMethod,
-                PaymentMethod = paymentMethod
-            };
-
-            // if someone orders as a guest require additional info and put that into order
-            if(user == null)
-            {
-                order.ClientEmail = guestUser.Email;
-                order.ClientName = guestUser.Name;
-                order.ClientSurname = guestUser.Surname;
-                order.ClientPhone = guestUser.Phone;
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The delivery method is not chosen, please check if the delivery method is selected")
+                };
+                throw new HttpResponseException(message);
             }
+
+            if (orderModel.PaymentMethodId == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The payment method is not chosen, please check if the payment method is selected")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var cart = await appDb.Carts.FindAsync(orderModel.CartId);
+
+            if (cart == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"Could not find a cart with the given {nameof(orderModel.CartId)}")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var order = mapper.Map<Order>(orderModel);
+
+            order.AddedAt = DateTime.Now;
+            order.ModifiedAt = DateTime.Now;
+            order.isConfirmed = false;
+            order.UserId = user.Id;
+
 
             await appDb.Orders.AddAsync(order);
             await appDb.SaveChangesAsync();
 
-            var cartItems = await appDb.CartProducts.Where(c => c.CartId == cartId).ToListAsync();          
+            var cartItems = await appDb.CartProducts
+                .Where(c => c.CartId == orderModel.CartId)
+                .Include(o => o.Option)
+                .ToListAsync();
 
-            if(cartItems == null)
-                return new OrderResponse { ErrorMessage = "No items in a cart" };
+            if (cartItems == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There are no items inside cart with given id {nameof(orderModel.CartId)},{nameof(cartItems)} is null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            List<OrderItem> orderItems = new List<OrderItem>();
 
             foreach (var cartItem in cartItems)
             {
@@ -93,38 +122,163 @@ namespace ECommerceServices
                 };
 
                 // remove the amount of ordered products from product stock
-                var product = await appDb.ProductOption.FindAsync(cartItem.ProductId, cartItem.OptionId);
-                product.ProductStock -= cartItem.Quantity;
-
-                await appDb.OrderItems.AddAsync(orderItem);
+                var productOption = await appDb.ProductOption.FindAsync(cartItem.ProductId, cartItem.OptionId);
+                productOption.ProductStock -= cartItem.Quantity;
+               
+                orderItems.Add(orderItem);
             }
 
-            // after order is created remove the cart
+            await appDb.OrderItems.AddRangeAsync(orderItems);
             appDb.Carts.Remove(cart);
-
-            await appDb.SaveChangesAsync();
-            return new OrderResponse { SuccessMessage = "Successfully created order" };
+            await appDb.SaveChangesAsync();          
         }
 
-        public async Task<OrderResponse> cancelOrder(int orderId)
+        public async Task createOrderGuest(OrderDTO orderModel)
+        {
+            logger.LogInformation($"Starting method {nameof(createOrderGuest)}.");
+
+            if (orderModel.ClientEmail == null || orderModel.ClientName == null || orderModel.ClientPhone == null || orderModel.ClientSurname == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The order is missing client details, please check if you filled all the details")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if(orderModel.Address == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The order is missing address details, please check if you filled all the details")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if(orderModel.DeliveryMethodId == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The delivery method is not chosen, please check if the delivery method is selected")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if(orderModel.PaymentMethodId == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The payment method is not chosen, please check if the payment method is selected")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var cart = await appDb.Carts.FindAsync(orderModel.CartId);
+
+            if(cart == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"Could not find a cart with the given {nameof(orderModel.CartId)}")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var order = mapper.Map<Order>(orderModel);
+
+            order.AddedAt = DateTime.Now;
+            order.ModifiedAt = DateTime.Now;
+            order.isConfirmed = false;
+            
+
+            await appDb.Orders.AddAsync(order);
+            await appDb.SaveChangesAsync();
+
+            var cartItems = await appDb.CartProducts
+                .Where(c => c.CartId == orderModel.CartId)
+                .Include(o => o.Option)
+                .ToListAsync();
+
+            if (cartItems == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There are no items inside cart with given id {nameof(orderModel.CartId)},{nameof(cartItems)} is null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            List<OrderItem> orderItems = new List<OrderItem>();
+
+            foreach (var cartItem in cartItems)
+            {
+                OrderItem orderItem = new OrderItem
+                {
+                    OrderId = order.Id,
+                    ProductId = cartItem.ProductId,
+                    Quantity = cartItem.Quantity,
+                    Option = cartItem.Option
+                };
+
+                // remove the amount of ordered products from product stock
+                var productOption = await appDb.ProductOption.FindAsync(cartItem.ProductId, cartItem.OptionId);
+                productOption.ProductStock -= cartItem.Quantity;
+
+                orderItems.Add(orderItem);               
+            }
+
+            await appDb.OrderItems.AddRangeAsync(orderItems);
+            appDb.Carts.Remove(cart);
+            await appDb.SaveChangesAsync();           
+        }
+
+        public async Task cancelOrder(int orderId)
         {
             var order = await appDb.Orders.FindAsync(orderId);
 
-            foreach(var orderItem in order.Items)
+            if (order == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There are no found with given id {nameof(orderId)}")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            foreach (var orderItem in order.Items)
             {
                 // add the amount of ordered products to product stock
                 var product = await appDb.ProductOption.FindAsync(orderItem.ProductId, orderItem.OptionId);
                 product.ProductStock += orderItem.Quantity;
             }
 
-            appDb.Orders.Remove(order);
-            await appDb.SaveChangesAsync();
-            return new OrderResponse { SuccessMessage = "Successfully canceled order" };
+            order.Status = OrderStatus.Canceled;
+            order.ModifiedAt = DateTime.Now;
+            await appDb.SaveChangesAsync();            
         }
 
         public Task EditOrder()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task getAllUserOrders(ApplicationUser user)
+        {
+            logger.LogInformation($"Starting method {nameof(getAllUserOrders)}.");
+
+            if (user == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The user is not found, check if you are logged in")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var orders = await appDb.Orders.Where(o => o.UserId == user.Id).ToListAsync();
+
+
+            logger.LogInformation($"Finished method {nameof(getAllUserOrders)}.");
         }
     }
 }

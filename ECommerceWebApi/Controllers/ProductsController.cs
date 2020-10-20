@@ -90,10 +90,12 @@ namespace ECommerceWebApi.Controllers
             logger.LogInformation($"Starting method {nameof(EditProduct)}.");
             try
             {
-                await productServices.EditProductAsync(productModel, productImage);
+               Product product = await productServices.EditProductAsync(productModel, productImage);
 
-                logger.LogInformation($"Finished method {nameof(EditProduct)}");
-                return Ok();
+               var productDTO = mapper.Map<ProductDTO>(product);
+
+               logger.LogInformation($"Finished method {nameof(EditProduct)}");
+               return Ok(productDTO);
             }
             catch(System.Web.Http.HttpResponseException ex)
             {
@@ -115,7 +117,7 @@ namespace ECommerceWebApi.Controllers
             {
                var products = await productServices.GetAllProductsAsync();
 
-               var productsDTO = mapper.Map<ProductDTO>(products);
+               var productsDTO = mapper.Map<List<ProductDTO>>(products);
 
                logger.LogInformation($"Finished method {nameof(GetProducts)}");
                return Ok(productsDTO);
@@ -238,14 +240,23 @@ namespace ECommerceWebApi.Controllers
 
         [HttpPost]
         [Route("addCategory")]
-        public async Task<IActionResult> AddCategory([FromBody]Category categoryModel)
+        public async Task<IActionResult> AddCategory([FromBody]CategoryDTO categoryModel)
         {
-            if (categoryModel == null)
-                return StatusCode(StatusCodes.Status204NoContent);
+            logger.LogInformation($"Starting method {nameof(AddCategory)}.");
 
-            await productServices.AddCategory(categoryModel);
+            try
+            {
+                await productServices.AddCategoryAsync(categoryModel);
 
-            return Ok();
+                logger.LogInformation($"Finished method {nameof(AddCategory)}.");
+
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
 
         [HttpPost]
@@ -256,20 +267,26 @@ namespace ECommerceWebApi.Controllers
 
             return Ok();
         }
-
-        [HttpPost]
-        [Route("addImage")]
-        public async Task<IActionResult> AddImage(IFormFile imageFile,int productId)
+      
+        [HttpGet]
+        [Route("getOptions")]
+        public async Task<IActionResult> GetAllOptions()
         {
-            
+            logger.LogInformation($"Starting method {nameof(GetAllOptions)}.");
 
-            var file = HttpContext.Request.Form.Files[0];
+            try
+            {
+               
 
-            var product = await appDb.Products.FindAsync(productId);
+                logger.LogInformation($"Finished method {nameof(GetAllOptions)}.");
 
-            await uploadServices.UploadProductPhotoAsync(file, product);
-
-            return Ok();
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
 
 

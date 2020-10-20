@@ -16,7 +16,7 @@ namespace ECommerceWebApi.Maps
                 {
                     dest.OptionGroup = new OptionGroup
                     {
-                        Id = src.OptionGroupId,
+                        Id = (int)src.OptionGroupId,
                         Name = src.OptionGroupName
                     };
 

@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerceData.Migrations
 {
     [DbContext(typeof(ECommerceContext))]
-    [Migration("20201013113759_init")]
-    partial class init
+    [Migration("20201019000736_data-seed")]
+    partial class dataseed
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -198,6 +198,68 @@ namespace ECommerceData.Migrations
                     b.HasIndex("OptionGroupId");
 
                     b.ToTable("Options");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "XS",
+                            OptionGroupId = 1
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "S",
+                            OptionGroupId = 1
+                        },
+                        new
+                        {
+                            Id = 3,
+                            Name = "M",
+                            OptionGroupId = 1
+                        },
+                        new
+                        {
+                            Id = 4,
+                            Name = "L",
+                            OptionGroupId = 1
+                        },
+                        new
+                        {
+                            Id = 5,
+                            Name = "XL",
+                            OptionGroupId = 1
+                        },
+                        new
+                        {
+                            Id = 6,
+                            Name = "XXL",
+                            OptionGroupId = 1
+                        },
+                        new
+                        {
+                            Id = 7,
+                            Name = "black",
+                            OptionGroupId = 2
+                        },
+                        new
+                        {
+                            Id = 8,
+                            Name = "white",
+                            OptionGroupId = 2
+                        },
+                        new
+                        {
+                            Id = 9,
+                            Name = "gray",
+                            OptionGroupId = 2
+                        },
+                        new
+                        {
+                            Id = 10,
+                            Name = "red",
+                            OptionGroupId = 2
+                        });
                 });
 
             modelBuilder.Entity("ECommerceModels.Models.OptionGroup", b =>
@@ -213,6 +275,18 @@ namespace ECommerceData.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("OptionGroups");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Name = "size"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "color"
+                        });
                 });
 
             modelBuilder.Entity("ECommerceModels.Models.Order", b =>
@@ -252,8 +326,8 @@ namespace ECommerceData.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
-                    b.Property<string>("Status")
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(450)");

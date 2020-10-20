@@ -32,15 +32,45 @@ namespace ECommerceServices
             this.uploadServices = uploadServices;
         }
 
-        public async Task AddCategory(Category categoryModel)
+        public async Task AddCategoryAsync(CategoryDTO categoryModel)
         {
-            Category category = new Category()
+            logger.LogInformation($"Starting method {nameof(AddCategoryAsync)}.");
+
+            if (categoryModel == null)
             {
-                Name = categoryModel.Name
-            };
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(categoryModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if (categoryModel.Name == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(categoryModel)} is missing some required values")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var categoryExists = await appDb.Categories.Where(x => x.Name == categoryModel.Name).AnyAsync();
+
+            if (categoryExists)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There already is an element inside the database as the one to be added {nameof(categoryModel.Name)} is not unique")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var category = mapper.Map<Category>(categoryModel);
 
             await appDb.Categories.AddAsync(category);
             await appDb.SaveChangesAsync();
+
+            logger.LogInformation($"Finished method {nameof(AddCategoryAsync)}.");
         }
 
         public async Task AddCategoryToProduct(int productId, int categoryId)
@@ -217,7 +247,7 @@ namespace ECommerceServices
             logger.LogInformation($"Finished method {nameof(DeleteProductAsync)}.");
         }
 
-        public async Task EditProductAsync(ProductDTO productModel,IFormFile productImage)
+        public async Task<Product> EditProductAsync(ProductDTO productModel,IFormFile productImage)
         {
             logger.LogInformation($"Starting method {nameof(EditProductAsync)}.");
 
@@ -251,6 +281,8 @@ namespace ECommerceServices
             }
 
             logger.LogInformation($"Finished method {nameof(EditProductAsync)}.");
+
+            return product;
         }
 
         public async Task<List<Product>> FilterProductsAsync(string productName,string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo)
@@ -316,21 +348,32 @@ namespace ECommerceServices
                 };
                 throw new HttpResponseException(message);
             }
-
+           
             return products;
         }
 
         public async Task<List<Product>> GetAllProductsAsync()
         {
-            logger.LogInformation($"Starting method {nameof(GetAllProductsAsync)}.");
+            logger.LogInformation($"Starting method {nameof(GetAllProductsAsync)}.");           
 
-            logger.LogInformation($"Finished method {nameof(GetAllProductsAsync)}.");
-
-            return await appDb.Products
+            var products = await appDb.Products
                         .Include(p => p.Category)
                         .Include(p => p.ProductOptions)
                             .ThenInclude(po => po.Option)
                         .ToListAsync();
+
+            if (products == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent($"There are no products in the database")
+                };
+                throw new HttpResponseException(message);
+            }
+           
+           logger.LogInformation($"Finished method {nameof(GetAllProductsAsync)}.");
+
+            return products;
         }
        
         public async Task<Product> GetProductAsync(int productId)

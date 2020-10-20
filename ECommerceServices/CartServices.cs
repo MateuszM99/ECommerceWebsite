@@ -104,7 +104,7 @@ namespace ECommerceServices
             return new CartResponse { Status = "Success", Message = "Succesfully removed item from cart" };
         }
 
-        public float GetCartPrice(int cartId)
+        public double GetCartPrice(int cartId)
         {
             return appDb.CartProducts
                         .Where(x => x.CartId == cartId)

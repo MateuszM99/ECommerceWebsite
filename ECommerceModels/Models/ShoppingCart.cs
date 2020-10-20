@@ -11,8 +11,8 @@ namespace ECommerceModels.Models
     {
         [Key]
         public int Id { get; set; }
-        public float TotalPrice { get; set; }
-        [ForeignKey("Standard")]
+        public double TotalPrice { get; set; }
+        
         public string UserId { get; set; }
         public ApplicationUser AppUser { get; set; }      
         public IList<CartProduct> CartProducts { get; set; }

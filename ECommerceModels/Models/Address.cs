@@ -15,6 +15,7 @@ namespace ECommerceModels.Models
         public string Street { get; set; }
         public string HouseNumber { get; set; }
         public string PostCode {get;set; }
+        
         public IList<ApplicationUser> ApplicationUsers { get; set; }
         public IList<Order> Orders { get; set; }
     }

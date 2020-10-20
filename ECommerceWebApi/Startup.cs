@@ -106,7 +106,7 @@ namespace ECommerceWebApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             if (env.IsDevelopment())
             {
@@ -121,7 +121,12 @@ namespace ECommerceWebApi
 
             app.UseAuthentication();
 
-            app.UseAuthorization();          
+            app.UseAuthorization();
+
+            if (!env.IsProduction())
+            {
+                ModelBuilderExtension.SeedUsersData(userManager, roleManager, Configuration);
+            }
 
             app.UseEndpoints(endpoints =>
             {
