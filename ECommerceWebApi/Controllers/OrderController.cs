@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using AutoMapper;
 using ECommerceData;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
@@ -26,13 +27,15 @@ namespace ECommerceWebApi.Controllers
         private readonly UserManager<ApplicationUser> userManager;
         private readonly ECommerceContext appDb;
         private readonly IOrderServices orderServices;
+        private readonly IMapper mapper;
 
-        public OrderController(ILogger<OrderController> logger,UserManager<ApplicationUser> userManager, ECommerceContext appDb, IOrderServices orderServices)
+        public OrderController(ILogger<OrderController> logger,UserManager<ApplicationUser> userManager, ECommerceContext appDb, IOrderServices orderServices, IMapper mapper)
         {
             this.userManager = userManager;
             this.appDb = appDb;
             this.orderServices = orderServices;
             this.logger = logger;
+            this.mapper = mapper;
         }
                   
         [HttpPost]
@@ -70,6 +73,27 @@ namespace ECommerceWebApi.Controllers
 
                 logger.LogInformation($"Finished method {nameof(CancelOrder)}");
                 return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
+        public async Task<IActionResult> GetAllUsersOrders()
+        {
+            logger.LogInformation($"Starting method {nameof(GetAllUsersOrders)}.");
+            try
+            {
+                var user = await userManager.GetUserAsync(HttpContext.User);
+
+                var orders = await orderServices.getAllUsersOrdersAsync(user);
+
+                var ordersDTO = mapper.Map<List<OrderDTO>>(orders);
+
+                logger.LogInformation($"Finished method {nameof(GetAllUsersOrders)}");
+                return Ok(ordersDTO);
             }
             catch (System.Web.Http.HttpResponseException ex)
             {

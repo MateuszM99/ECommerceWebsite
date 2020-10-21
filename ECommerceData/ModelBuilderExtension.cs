@@ -300,14 +300,14 @@ namespace ECommerceData
                     UserName = adminUsername
                 };
 
-                userManager.CreateAsync(admin,"Test%123").Wait();
+                userManager.CreateAsync(admin,"Test%123").GetAwaiter();
 
                 if (!roleManager.RoleExistsAsync(UserRoles.Admin).Result)
-                    roleManager.CreateAsync(new IdentityRole(UserRoles.Admin)).Wait();
+                    roleManager.CreateAsync(new IdentityRole(UserRoles.Admin)).GetAwaiter();
 
                 if (roleManager.RoleExistsAsync(UserRoles.Admin).Result)
                 {
-                    userManager.AddToRoleAsync(admin, UserRoles.Admin).Wait();
+                    userManager.AddToRoleAsync(admin, UserRoles.Admin).GetAwaiter();
                 }
             }
         }

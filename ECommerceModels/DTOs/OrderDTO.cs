@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ECommerceModels.Enums;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,7 +8,7 @@ namespace ECommerceModels.DTOs
     public class OrderDTO
     {
         public int? Id { get; set; }
-        public string Status { get; set; }
+        public OrderStatus Status { get; set; }
         public double Price { get; set; }
         public DateTime AddedAt { get; set; }
         public DateTime ModifiedAt { get; set; }      

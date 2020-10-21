@@ -14,6 +14,6 @@ namespace ECommerceIServices
         Task<CartResponse> AddToCart(int? cartId, int productId,int? quantity, string optionName);
         Task<CartResponse> RemoveFromCart(int? cartId,int productId);
         List<ProductOptionQuantity> GetCartProducts(int cartId);
-        float GetCartPrice(int cartId);
+        double GetCartPrice(int cartId);
     }
 }

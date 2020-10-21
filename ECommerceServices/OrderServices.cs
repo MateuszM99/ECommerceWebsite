@@ -262,7 +262,7 @@ namespace ECommerceServices
             throw new NotImplementedException();
         }
 
-        public async Task getAllUserOrders(ApplicationUser user)
+        public async Task<List<Order>> getAllUserOrdersAsync(ApplicationUser user)
         {
             logger.LogInformation($"Starting method {nameof(getAllUserOrders)}.");
 
@@ -275,10 +275,13 @@ namespace ECommerceServices
                 throw new HttpResponseException(message);
             }
 
-            var orders = await appDb.Orders.Where(o => o.UserId == user.Id).ToListAsync();
-
+            var orders = await appDb.Orders.Where(o => o.UserId == user.Id)
+                .Include(o => o.Items)
+                .ToListAsync();
 
             logger.LogInformation($"Finished method {nameof(getAllUserOrders)}.");
+
+            return orders;
         }
     }
 }
