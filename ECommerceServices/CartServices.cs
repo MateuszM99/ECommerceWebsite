@@ -66,10 +66,12 @@ namespace ECommerceServices
 
             await appDb.SaveChangesAsync();
 
-            cart.TotalPrice = GetCartPrice(cart.Id);
+            cart.TotalPrice = await GetCartPrice(cart.Id);
             await appDb.SaveChangesAsync();
+            var cartCount = await getCartProductsCount(cart.Id);
 
-            return new CartResponse { CartId = cart.Id,Status="Success",Message = "Succesfully added product to cart"};
+
+            return new CartResponse { CartId = cart.Id,CartPrice = cart.TotalPrice,CartCount = cartCount, Status="Success", Message = "Succesfully added product to cart"};
         }
 
         public async Task<CartResponse> RemoveFromCart(int? cartId, int productId)
@@ -98,26 +100,41 @@ namespace ECommerceServices
             }
 
             await appDb.SaveChangesAsync();
-            cart.TotalPrice = GetCartPrice(cart.Id);
+            cart.TotalPrice = await GetCartPrice(cart.Id);
             await appDb.SaveChangesAsync();
+            var cartCount = await getCartProductsCount(cart.Id);
 
-            return new CartResponse { Status = "Success", Message = "Succesfully removed item from cart" };
+            return new CartResponse { CartPrice = cart.TotalPrice, CartCount = cartCount, Status = "Success", Message = "Succesfully removed item from cart" };
         }
 
-        public double GetCartPrice(int cartId)
+        public async Task<double> GetCartPrice(int cartId)
         {
-            return appDb.CartProducts
+            return await appDb.CartProducts
                         .Where(x => x.CartId == cartId)
                         .Select(x => x.Product.Price * x.Quantity)
-                        .Sum();
+                        .SumAsync();
         }
 
-        public List<ProductOptionQuantity> GetCartProducts(int cartId)
+        public async Task<List<ProductOptionQuantity>> GetCartProductsAsync(int cartId)
         {
-            var products = appDb.CartProducts.Include(cp => cp.Option).Where(c => c.CartId == cartId)
-                .Select(p => new ProductOptionQuantity(p.Product, p.Quantity,p.Option)).ToList();
+            var products = await appDb.CartProducts.Include(cp => cp.Option).Where(c => c.CartId == cartId)
+                .Select(p => new ProductOptionQuantity(p.Product, p.Quantity,p.Option)).ToListAsync();
 
             return products;
-        }          
+        }
+
+        public async Task<int> getCartProductsCount(int cartId)
+        {
+            List<ProductOptionQuantity> productQuantities = await GetCartProductsAsync(cartId);
+
+            int count = 0;
+
+            foreach (var product in productQuantities)
+            {
+                count += 1 * product.quantity;
+            }
+
+            return count;
+        }
     }
 }

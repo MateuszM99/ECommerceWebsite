@@ -42,7 +42,7 @@ namespace ECommerceWebApi.Controllers
                 return StatusCode(StatusCodes.Status400BadRequest,cartResponse.Message);
 
             return Ok(new {
-                cartResponse.CartId,cartResponse.Message
+                cartResponse.CartId,cartResponse.CartPrice,cartResponse.CartCount,cartResponse.Message
             });            
         }
 
@@ -57,38 +57,20 @@ namespace ECommerceWebApi.Controllers
             if (cartResponse.Status == "Error")
                 return StatusCode(StatusCodes.Status400BadRequest, cartResponse.Message);
 
-            return Ok(new
-            {            
-                cartResponse.Message
+            return Ok(new {
+                cartResponse.CartPrice,cartResponse.CartCount,cartResponse.Message
             });
         }
 
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getCart")]
-        public List<ProductOptionQuantity> getCartProducts(int cartId)
+        public async Task<List<ProductOptionQuantity>> getCartProducts(int cartId)
         {
-            return cartServices.GetCartProducts(cartId);
+            return await cartServices.GetCartProductsAsync(cartId);
         }
 
-        [EnableCors("Policy")]
-        [HttpGet]
-        [Route("getCartCount")]
-        public int getCartProductsCount(int cartId)
-        {
-            List<ProductOptionQuantity> productQuantities = cartServices.GetCartProducts(cartId);
-
-            int count = 0;
-
-            foreach(var product in productQuantities)
-            {
-                count += 1 * product.quantity;
-            }
-
-            return count;
-        }
-
-
+       
    
     }
 }
