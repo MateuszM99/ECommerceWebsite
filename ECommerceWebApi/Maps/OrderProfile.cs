@@ -10,7 +10,7 @@ namespace ECommerceWebApi.Maps
 {
     public class OrderProfile : Profile
     {
-        OrderProfile()
+        public OrderProfile()
         {
             CreateMap<Order, OrderDTO>()
                 .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.User.FirstName))

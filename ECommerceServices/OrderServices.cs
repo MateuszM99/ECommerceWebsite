@@ -262,9 +262,9 @@ namespace ECommerceServices
             throw new NotImplementedException();
         }
 
-        public async Task<List<Order>> getAllUserOrdersAsync(ApplicationUser user)
+        public async Task<List<Order>> getAllUsersOrdersAsync(ApplicationUser user)
         {
-            logger.LogInformation($"Starting method {nameof(getAllUserOrders)}.");
+            logger.LogInformation($"Starting method {nameof(getAllUsersOrdersAsync)}.");
 
             if (user == null)
             {
@@ -279,7 +279,7 @@ namespace ECommerceServices
                 .Include(o => o.Items)
                 .ToListAsync();
 
-            logger.LogInformation($"Finished method {nameof(getAllUserOrders)}.");
+            logger.LogInformation($"Finished method {nameof(getAllUsersOrdersAsync)}.");
 
             return orders;
         }

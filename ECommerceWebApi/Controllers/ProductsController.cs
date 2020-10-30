@@ -155,9 +155,12 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getCategories")]
-        public List<Category> GetCategories()
+        public async Task<IActionResult> GetCategories()
         {
-            return appDb.Categories.ToList();
+           var categories = await appDb.Categories.ToListAsync();
+           var categoriesDTO = mapper.Map<List<CategoryDTO>>(categories);
+
+           return Ok(categoriesDTO);
         }
 
         [EnableCors("Policy")]
@@ -171,7 +174,7 @@ namespace ECommerceWebApi.Controllers
             {
                 List<Product> products = await productServices.FilterProductsAsync(productName, categoryName, sortType, orderType, size, color, priceFrom, priceTo);
 
-                var productsDTO = mapper.Map<ProductDTO>(products);
+                var productsDTO = mapper.Map<List<ProductDTO>>(products);
 
                 logger.LogInformation($"Finished method {nameof(FilterProducts)}.");
 
@@ -208,6 +211,7 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("addOptionToProduct")]
         public async Task<IActionResult> AddOptionToProduct(int productId,int optionId)
@@ -267,7 +271,8 @@ namespace ECommerceWebApi.Controllers
 
             return Ok();
         }
-      
+
+        [EnableCors("Policy")]
         [HttpGet]
         [Route("getOptions")]
         public async Task<IActionResult> GetAllOptions()
@@ -276,11 +281,13 @@ namespace ECommerceWebApi.Controllers
 
             try
             {
-               
+                var options = await appDb.Options.ToListAsync();
+
+                var optionsDTO = mapper.Map<List<OptionDTO>>(options);
 
                 logger.LogInformation($"Finished method {nameof(GetAllOptions)}.");
 
-                return Ok();
+                return Ok(optionsDTO);
             }
             catch (System.Web.Http.HttpResponseException ex)
             {

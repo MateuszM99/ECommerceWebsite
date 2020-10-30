@@ -384,7 +384,7 @@ namespace ECommerceServices
                                 .Include(p => p.Category)
                                 .Include(p => p.ProductOptions)
                                     .ThenInclude(po => po.Option)
-                                .SingleAsync(p => p.Id == productId);
+                                .SingleOrDefaultAsync(p => p.Id == productId);
 
             if (product == null)
             {

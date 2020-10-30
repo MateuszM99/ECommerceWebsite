@@ -22,6 +22,14 @@ namespace ECommerceServices
         public async Task<CartResponse> AddToCart(int? cartId, int productId,int? quantity,string optionName)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
+
+            if (cart == null)
+            {
+                cart = new ShoppingCart();
+                await appDb.AddAsync(cart);
+                await appDb.SaveChangesAsync();
+            }
+
             var cartProduct = await appDb.CartProducts.FindAsync(cart.Id, productId);
             var productOption = await appDb.Options.Where(o => o.Name == optionName).FirstOrDefaultAsync();
 
@@ -33,20 +41,12 @@ namespace ECommerceServices
 
             if (productStock < quantity)
                 return new CartResponse { Status = "Error", Message = "Not enough products in stock" };
-
-            if (cart == null)
-            {
-                cart = new ShoppingCart();
-                await appDb.AddAsync(cart);
-                await appDb.SaveChangesAsync();
-            }
-                      
+                               
             if(quantity == null)
             {
                 quantity = 1;
             }
          
-
             if (cartProduct == null)
             {
                 cartProduct = new CartProduct()

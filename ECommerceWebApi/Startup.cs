@@ -76,6 +76,9 @@ namespace ECommerceWebApi
             {
                 mc.AddProfile(new ProductProfile());
                 mc.AddProfile(new OptionProfile());
+                mc.AddProfile(new CategoryProfile());
+                mc.AddProfile(new AddressProfile());
+                mc.AddProfile(new OrderProfile());
             });
 
             IMapper mapper = mapperConfig.CreateMapper();

@@ -10,10 +10,18 @@ namespace ECommerceWebApi.Maps
 {
     public class CategoryProfile : Profile
     {
-        CategoryProfile()
+        public CategoryProfile()
         {
-            CreateMap<Category, CategoryDTO>();
-            CreateMap<CategoryDTO, Category>();
+            CreateMap<Category, CategoryDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForSourceMember(src => src.Products, opt => opt.DoNotValidate());
+                
+
+            CreateMap<CategoryDTO, Category>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Name))
+                .ForMember(dest => dest.Products, opt => opt.Ignore());
         }
     }
 }
