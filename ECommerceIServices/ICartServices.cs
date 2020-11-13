@@ -13,7 +13,8 @@ namespace ECommerceIServices
     {
         Task<CartResponse> AddToCart(int? cartId, int productId,int? quantity, string optionName);
         Task<CartResponse> RemoveFromCart(int? cartId,int productId);
-        List<ProductOptionQuantity> GetCartProducts(int cartId);
-        float GetCartPrice(int cartId);
+        Task<List<ProductOptionQuantity>> GetCartProductsAsync(int cartId);
+        Task<double> GetCartPrice(int cartId);
+        Task<int> getCartProductsCount(int cartId);
     }
 }

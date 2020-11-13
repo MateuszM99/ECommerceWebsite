@@ -10,6 +10,7 @@ namespace ECommerceData
         public ECommerceContext(DbContextOptions<ECommerceContext> options)
             : base(options)
         {
+               
         }
 
         public DbSet<Product> Products { get; set; }
@@ -29,6 +30,8 @@ namespace ECommerceData
         {
             base.OnModelCreating(builder);
 
+            builder.SeedData();
+            
             builder.Entity<ProductOption>().HasKey(key => new { key.OptionId, key.ProductId });
 
             builder.Entity<CartProduct>().HasKey(key => new { key.CartId, key.ProductId });
@@ -60,6 +63,11 @@ namespace ECommerceData
                .WithMany(po => po.ProductOptions)
                .HasForeignKey(o => o.OptionId);
 
+            builder.Entity<ApplicationUser>()
+                .HasOne(a => a.Address)
+                .WithMany(a => a.ApplicationUsers)
+                .HasForeignKey(a => a.AdresId);
+
             builder.Entity<Address>()
                 .HasMany(u => u.ApplicationUsers)
                 .WithOne(a => a.Address);
@@ -84,7 +92,7 @@ namespace ECommerceData
 
             builder.Entity<OrderItem>()
                 .HasOne<Order>(o => o.Order)
-                .WithMany(o => o.OrderItems)
+                .WithMany(o => o.Items)
                 .HasForeignKey(o => o.OrderId);
 
             builder.Entity<OrderItem>()
@@ -111,6 +119,7 @@ namespace ECommerceData
                 .HasOne<PaymentMethod>(p => p.PaymentMethod)
                 .WithMany(o => o.Orders)
                 .HasForeignKey(p => p.PaymentMethodId);
+           
         }
     }
 }

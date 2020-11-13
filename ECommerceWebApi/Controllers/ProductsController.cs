@@ -6,18 +6,22 @@ using System.Net;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using AutoMapper;
 using ECommerceData;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
+using ECommerceModels.DTOs;
 using ECommerceModels.Enums;
 using ECommerceModels.Models;
 using ECommerceModels.SpecificationPattern;
+using ECommerceWebApi.ModlBinder;
 using EllipticCurve.Utils;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace ECommerceWebApi.Controllers
 {
@@ -25,92 +29,189 @@ namespace ECommerceWebApi.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
+        private readonly ILogger<ProductsController> logger;
         private readonly UserManager<ApplicationUser> userManager;
         private readonly ECommerceContext appDb;
         private readonly IProductServices productServices;
         private readonly IUploadServices uploadServices;
-        public ProductsController(UserManager<ApplicationUser> userManager, ECommerceContext appDb, IProductServices productServices, IUploadServices uploadServices)
+        private readonly IMapper mapper;
+        public ProductsController(ILogger<ProductsController> logger, UserManager<ApplicationUser> userManager, ECommerceContext appDb, IProductServices productServices, IUploadServices uploadServices,IMapper mapper)
         {
+            this.logger = logger;
             this.userManager = userManager;
             this.appDb = appDb;
             this.productServices = productServices;
             this.uploadServices = uploadServices;
+            this.mapper = mapper;
         }
 
         [HttpPost]
         [Route("addProduct")]
-        public async Task<IActionResult> AddProduct([FromBody]Product productModel)
+        public async Task<IActionResult> CreateProduct([ModelBinder(BinderType = typeof(JsonModelBinder))] ProductDTO productModel,IFormFile productImage)
         {
-            if (productModel == null)
-                return StatusCode(StatusCodes.Status204NoContent);
+            logger.LogInformation($"Starting method {nameof(CreateProduct)}.");  
+            try
+            {
+                await productServices.CreateProductAsync(productModel,productImage);
 
-            var product = await appDb.Products.FindAsync(productModel.ProductId);
-
-            if (product != null)
-                return StatusCode(StatusCodes.Status405MethodNotAllowed);
-
-            product = new Product
-            {               
-                ProductName = productModel.ProductName,
-                ProductDescription = productModel.ProductDescription,
-                ProductPrice = productModel.ProductPrice,
-                AddedAt = DateTime.Now
-            };
-
-            await appDb.Products.AddAsync(product);
-            await appDb.SaveChangesAsync();
-
-            return Ok();
+                logger.LogInformation($"Finished method {nameof(CreateProduct)}");
+                return Ok();
+            } 
+            catch(System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
+
+        [HttpPost]
+        [Route("deleteProduct")]
+        public async Task<IActionResult> DeleteProduct(int productId)
+        {
+            logger.LogInformation($"Starting method {nameof(DeleteProduct)}.");
+            try
+            {
+                await productServices.DeleteProductAsync(productId);
+
+                logger.LogInformation($"Finished method {nameof(DeleteProduct)}");
+                return Ok();
+            }
+            catch(System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
+        [HttpPost]
+        [Route("editProduct")]
+        public async Task<IActionResult> EditProduct([ModelBinder(BinderType = typeof(JsonModelBinder))] ProductDTO productModel, IFormFile productImage)
+        {
+            logger.LogInformation($"Starting method {nameof(EditProduct)}.");
+            try
+            {
+               Product product = await productServices.EditProductAsync(productModel, productImage);
+
+               var productDTO = mapper.Map<ProductDTO>(product);
+
+               logger.LogInformation($"Finished method {nameof(EditProduct)}");
+               return Ok(productDTO);
+            }
+            catch(System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
+
 
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getProducts")]
-        public List<Product> GetProducts()
-        {
-            return productServices.GetAllProducts();
+        public async Task<IActionResult> GetProducts()
+        {           
+            logger.LogInformation($"Starting method {nameof(GetProducts)}.");
+            
+            try
+            {
+               var products = await productServices.GetAllProductsAsync();
+
+               var productsDTO = mapper.Map<List<ProductDTO>>(products);
+
+               logger.LogInformation($"Finished method {nameof(GetProducts)}");
+               return Ok(productsDTO);
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+               logger.LogError($"{ex.Message}");
+               throw;
+            }
         }
         
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getProduct")]
-        public Product GetProduct(string productCategory,string productName,int productId)
+        public async Task<IActionResult> GetProduct(int productId)
         {
-            return appDb.Products.Include(p => p.Category).Where(p => p.Category.CategoryName == productCategory && p.ProductName == productName && p.ProductId == productId).FirstOrDefault();
+            logger.LogInformation($"Starting method {nameof(GetProduct)}.");
+
+            try
+            {
+                var product = await productServices.GetProductAsync(productId);
+
+                var productDTO = mapper.Map<ProductDTO>(product);
+
+                logger.LogInformation($"Finished method {nameof(GetProduct)}");
+                return Ok(productDTO);
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
 
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getCategories")]
-        public List<Category> GetCategories()
+        public async Task<IActionResult> GetCategories()
         {
-            return appDb.Categories.ToList();
+           var categories = await appDb.Categories.ToListAsync();
+           var categoriesDTO = mapper.Map<List<CategoryDTO>>(categories);
+
+           return Ok(categoriesDTO);
         }
 
         [EnableCors("Policy")]
         [HttpGet]
         [Route("products")]
-        public List<Product> FilterProducts(string productName,string categoryName,string sortType,string orderType,Size? size,Color? color,float? priceFrom=0,float? priceTo=99999)
+        public async Task<IActionResult> FilterProducts(string productName,string categoryName,string sortType,string orderType,Size? size,Color? color,float? priceFrom=0,float? priceTo=99999)
         {
-            List<Product> products = productServices.FilterProducts(productName,categoryName, sortType, orderType, size, color, priceFrom, priceTo);
+            logger.LogInformation($"Starting method {nameof(FilterProducts)}.");
 
-            return products;
+            try
+            {
+                List<Product> products = await productServices.FilterProductsAsync(productName, categoryName, sortType, orderType, size, color, priceFrom, priceTo);
+
+                var productsDTO = mapper.Map<List<ProductDTO>>(products);
+
+                logger.LogInformation($"Finished method {nameof(FilterProducts)}.");
+
+                return Ok(productsDTO);
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+            
         }
 
        
 
         [HttpPost]
         [Route("addOptionGroup")]
-        public async Task<IActionResult> AddOptionGroup([FromBody]OptionGroup optionGroupModel)
+        public async Task<IActionResult> AddOptionGroup([FromBody]OptionGroupDTO optionGroupModel)
         {
-            if (optionGroupModel == null)
-                return StatusCode(StatusCodes.Status204NoContent);
+            logger.LogInformation($"Starting method {nameof(AddOptionGroup)}.");
 
-            await productServices.AddOptionGroup(optionGroupModel);
+            try
+            {
+                await productServices.AddOptionGroupAsync(optionGroupModel);
 
-            return Ok();
+                logger.LogInformation($"Finished method {nameof(AddOptionGroup)}.");
+
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("addOptionToProduct")]
         public async Task<IActionResult> AddOptionToProduct(int productId,int optionId)
@@ -122,26 +223,44 @@ namespace ECommerceWebApi.Controllers
 
         [HttpPost]
         [Route("addOption")]
-        public async Task<IActionResult> AddOption([FromBody]Option optionModel)
+        public async Task<IActionResult> AddOption([FromBody]OptionDTO optionModel)
         {
-            if (optionModel == null)
-                return StatusCode(StatusCodes.Status204NoContent);
+            logger.LogInformation($"Starting method {nameof(AddOption)}.");
 
-            await productServices.AddOption(optionModel);
+            try
+            {
+                await productServices.AddOptionAsync(optionModel);
 
-            return Ok();
+                logger.LogInformation($"Finished method {nameof(AddOption)}.");
+
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
 
         [HttpPost]
         [Route("addCategory")]
-        public async Task<IActionResult> AddCategory([FromBody]Category categoryModel)
+        public async Task<IActionResult> AddCategory([FromBody]CategoryDTO categoryModel)
         {
-            if (categoryModel == null)
-                return StatusCode(StatusCodes.Status204NoContent);
+            logger.LogInformation($"Starting method {nameof(AddCategory)}.");
 
-            await productServices.AddCategory(categoryModel);
+            try
+            {
+                await productServices.AddCategoryAsync(categoryModel);
 
-            return Ok();
+                logger.LogInformation($"Finished method {nameof(AddCategory)}.");
+
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
 
         [HttpPost]
@@ -153,17 +272,28 @@ namespace ECommerceWebApi.Controllers
             return Ok();
         }
 
-        [HttpPost]
-        [Route("addImage")]
-        public async Task<IActionResult> AddImage(IFormFile imageFile,int productId)
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getOptions")]
+        public async Task<IActionResult> GetAllOptions()
         {
-            
+            logger.LogInformation($"Starting method {nameof(GetAllOptions)}.");
 
-            var file = HttpContext.Request.Form.Files[0];
+            try
+            {
+                var options = await appDb.Options.ToListAsync();
 
-            await uploadServices.UploadingProductPhoto(file, productId);
+                var optionsDTO = mapper.Map<List<OptionDTO>>(options);
 
-            return Ok();
+                logger.LogInformation($"Finished method {nameof(GetAllOptions)}.");
+
+                return Ok(optionsDTO);
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
         }
 
 

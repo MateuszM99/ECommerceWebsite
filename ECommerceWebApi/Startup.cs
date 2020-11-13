@@ -20,6 +20,9 @@ using System.Text;
 using ECommerceIServices;
 using ECommerceServices;
 using ECommerceModels.Models;
+using System.Reflection;
+using AutoMapper;
+using ECommerceWebApi.Maps;
 
 namespace ECommerceWebApi
 {
@@ -49,7 +52,7 @@ namespace ECommerceWebApi
                                       builder.WithOrigins("http://localhost:3000")
                                                         .AllowAnyHeader()
                                                         .AllowAnyMethod()
-                                                        .AllowCredentials();                                                       
+                                                        .AllowCredentials();
                                   });
             });
 
@@ -69,6 +72,18 @@ namespace ECommerceWebApi
             services.AddScoped<IOrderServices, OrderServices>();
             services.Configure<AuthSenderOptions>(Configuration);
 
+            var mapperConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new ProductProfile());
+                mc.AddProfile(new OptionProfile());
+                mc.AddProfile(new CategoryProfile());
+                mc.AddProfile(new AddressProfile());
+                mc.AddProfile(new OrderProfile());
+            });
+
+            IMapper mapper = mapperConfig.CreateMapper();
+            services.AddSingleton(mapper);
+
             // Adding Authentication  
             services.AddAuthentication(options =>
             {
@@ -76,6 +91,7 @@ namespace ECommerceWebApi
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
             })
+
             // Adding Jwt Bearer  
             .AddJwtBearer(options =>
             {
@@ -93,7 +109,7 @@ namespace ECommerceWebApi
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env,UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager)
         {
             if (env.IsDevelopment())
             {
@@ -104,13 +120,16 @@ namespace ECommerceWebApi
 
             app.UseRouting();
 
+            app.UseCors();
+
             app.UseAuthentication();
 
             app.UseAuthorization();
 
-            
-
-            app.UseCors();         
+            if (!env.IsProduction())
+            {
+                ModelBuilderExtension.SeedUsersData(userManager, roleManager, Configuration);
+            }
 
             app.UseEndpoints(endpoints =>
             {

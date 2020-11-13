@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ECommerceData.Migrations
 {
-    public partial class optionProduct2 : Migration
+    public partial class dataseed : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -11,17 +11,17 @@ namespace ECommerceData.Migrations
                 name: "Addresses",
                 columns: table => new
                 {
-                    AdresId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Country = table.Column<string>(nullable: true),
                     City = table.Column<string>(nullable: true),
-                    Addres1 = table.Column<string>(nullable: true),
+                    Street = table.Column<string>(nullable: true),
                     HouseNumber = table.Column<string>(nullable: true),
                     PostCode = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Addresses", x => x.AdresId);
+                    table.PrimaryKey("PK_Addresses", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -42,26 +42,53 @@ namespace ECommerceData.Migrations
                 name: "Categories",
                 columns: table => new
                 {
-                    CategoryId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    CategoryName = table.Column<string>(nullable: true)
+                    Name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Categories", x => x.CategoryId);
+                    table.PrimaryKey("PK_Categories", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "DeliveryMethods",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(nullable: true),
+                    Price = table.Column<double>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_DeliveryMethods", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
                 name: "OptionGroups",
                 columns: table => new
                 {
-                    OptionGroupId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OptionGroupName = table.Column<string>(nullable: true)
+                    Name = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OptionGroups", x => x.OptionGroupId);
+                    table.PrimaryKey("PK_OptionGroups", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PaymentMethods",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_PaymentMethods", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -85,18 +112,16 @@ namespace ECommerceData.Migrations
                     AccessFailedCount = table.Column<int>(nullable: false),
                     FirstName = table.Column<string>(nullable: true),
                     LastName = table.Column<string>(nullable: true),
-                    Phone = table.Column<string>(nullable: true),
-                    AdresId = table.Column<int>(nullable: false),
-                    AddressAdresId = table.Column<int>(nullable: true)
+                    AdresId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AspNetUsers_Addresses_AddressAdresId",
-                        column: x => x.AddressAdresId,
+                        name: "FK_AspNetUsers_Addresses_AdresId",
+                        column: x => x.AdresId,
                         principalTable: "Addresses",
-                        principalColumn: "AdresId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -125,24 +150,24 @@ namespace ECommerceData.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    ProductId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ProductName = table.Column<string>(nullable: true),
-                    ProductPrice = table.Column<float>(nullable: false),
-                    ProductDescription = table.Column<string>(nullable: true),
-                    ProductSKU = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
+                    Price = table.Column<float>(nullable: false),
+                    Description = table.Column<string>(nullable: true),
+                    SKU = table.Column<string>(nullable: true),
                     ImageUrl = table.Column<string>(nullable: true),
-                    CategoryId = table.Column<int>(nullable: true),
-                    AddedAt = table.Column<DateTime>(nullable: false)
+                    AddedAt = table.Column<DateTime>(nullable: false),
+                    CategoryId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.ProductId);
+                    table.PrimaryKey("PK_Products", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "CategoryId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -150,19 +175,19 @@ namespace ECommerceData.Migrations
                 name: "Options",
                 columns: table => new
                 {
-                    OptionId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OptionName = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: true),
                     OptionGroupId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Options", x => x.OptionId);
+                    table.PrimaryKey("PK_Options", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Options_OptionGroups_OptionGroupId",
                         column: x => x.OptionGroupId,
                         principalTable: "OptionGroups",
-                        principalColumn: "OptionGroupId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
@@ -255,14 +280,14 @@ namespace ECommerceData.Migrations
                 name: "Carts",
                 columns: table => new
                 {
-                    CartId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     TotalPrice = table.Column<float>(nullable: false),
                     UserId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Carts", x => x.CartId);
+                    table.PrimaryKey("PK_Carts", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Carts_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -275,28 +300,42 @@ namespace ECommerceData.Migrations
                 name: "Orders",
                 columns: table => new
                 {
-                    OrderId = table.Column<int>(nullable: false)
+                    Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OrderStatus = table.Column<string>(nullable: true),
-                    OrderPrice = table.Column<double>(nullable: false),
-                    OrderDate = table.Column<DateTime>(nullable: false),
+                    Status = table.Column<int>(nullable: false),
+                    Price = table.Column<double>(nullable: false),
+                    AddedAt = table.Column<DateTime>(nullable: false),
                     ModifiedAt = table.Column<DateTime>(nullable: false),
-                    UserId = table.Column<string>(nullable: true),
-                    AddressId = table.Column<int>(nullable: false),
                     ClientEmail = table.Column<string>(nullable: true),
                     ClientName = table.Column<string>(nullable: true),
                     ClientSurname = table.Column<string>(nullable: true),
                     ClientPhone = table.Column<string>(nullable: true),
-                    isConfirmed = table.Column<bool>(nullable: false)
+                    isConfirmed = table.Column<bool>(nullable: false),
+                    UserId = table.Column<string>(nullable: true),
+                    AddressId = table.Column<int>(nullable: false),
+                    DeliveryMethodId = table.Column<int>(nullable: false),
+                    PaymentMethodId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => x.OrderId);
+                    table.PrimaryKey("PK_Orders", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Orders_Addresses_AddressId",
                         column: x => x.AddressId,
                         principalTable: "Addresses",
-                        principalColumn: "AdresId",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Orders_DeliveryMethods_DeliveryMethodId",
+                        column: x => x.DeliveryMethodId,
+                        principalTable: "DeliveryMethods",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_Orders_PaymentMethods_PaymentMethodId",
+                        column: x => x.PaymentMethodId,
+                        principalTable: "PaymentMethods",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_Orders_AspNetUsers_UserId",
@@ -311,7 +350,8 @@ namespace ECommerceData.Migrations
                 columns: table => new
                 {
                     ProductId = table.Column<int>(nullable: false),
-                    OptionId = table.Column<int>(nullable: false)
+                    OptionId = table.Column<int>(nullable: false),
+                    ProductStock = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -320,13 +360,13 @@ namespace ECommerceData.Migrations
                         name: "FK_ProductOption_Options_OptionId",
                         column: x => x.OptionId,
                         principalTable: "Options",
-                        principalColumn: "OptionId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_ProductOption_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "ProductId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -346,19 +386,19 @@ namespace ECommerceData.Migrations
                         name: "FK_CartProducts_Carts_CartId",
                         column: x => x.CartId,
                         principalTable: "Carts",
-                        principalColumn: "CartId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_CartProducts_Options_OptionId",
                         column: x => x.OptionId,
                         principalTable: "Options",
-                        principalColumn: "OptionId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_CartProducts_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "ProductId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -378,20 +418,47 @@ namespace ECommerceData.Migrations
                         name: "FK_OrderItems_Options_OptionId",
                         column: x => x.OptionId,
                         principalTable: "Options",
-                        principalColumn: "OptionId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_OrderItems_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
-                        principalColumn: "OrderId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
                         name: "FK_OrderItems_Products_ProductId",
                         column: x => x.ProductId,
                         principalTable: "Products",
-                        principalColumn: "ProductId",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "OptionGroups",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 1, "size" });
+
+            migrationBuilder.InsertData(
+                table: "OptionGroups",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 2, "color" });
+
+            migrationBuilder.InsertData(
+                table: "Options",
+                columns: new[] { "Id", "Name", "OptionGroupId" },
+                values: new object[,]
+                {
+                    { 1, "XS", 1 },
+                    { 2, "S", 1 },
+                    { 3, "M", 1 },
+                    { 4, "L", 1 },
+                    { 5, "XL", 1 },
+                    { 6, "XXL", 1 },
+                    { 7, "black", 2 },
+                    { 8, "white", 2 },
+                    { 9, "gray", 2 },
+                    { 10, "red", 2 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -422,9 +489,9 @@ namespace ECommerceData.Migrations
                 column: "RoleId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AspNetUsers_AddressAdresId",
+                name: "IX_AspNetUsers_AdresId",
                 table: "AspNetUsers",
-                column: "AddressAdresId");
+                column: "AdresId");
 
             migrationBuilder.CreateIndex(
                 name: "EmailIndex",
@@ -474,6 +541,16 @@ namespace ECommerceData.Migrations
                 name: "IX_Orders_AddressId",
                 table: "Orders",
                 column: "AddressId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_DeliveryMethodId",
+                table: "Orders",
+                column: "DeliveryMethodId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_PaymentMethodId",
+                table: "Orders",
+                column: "PaymentMethodId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_UserId",
@@ -531,6 +608,12 @@ namespace ECommerceData.Migrations
 
             migrationBuilder.DropTable(
                 name: "Products");
+
+            migrationBuilder.DropTable(
+                name: "DeliveryMethods");
+
+            migrationBuilder.DropTable(
+                name: "PaymentMethods");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

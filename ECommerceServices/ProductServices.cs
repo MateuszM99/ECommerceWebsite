@@ -1,34 +1,76 @@
-﻿using ECommerceData;
+﻿using AutoMapper;
+using ECommerceData;
 using ECommerceIServices;
+using ECommerceModels.DTOs;
 using ECommerceModels.Enums;
 using ECommerceModels.Models;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web.Http;
 
 namespace ECommerceServices
 {
     public class ProductServices : IProductServices
     {
+        private readonly ILogger<ProductServices> logger;
         private readonly ECommerceContext appDb;
-        public ProductServices(ECommerceContext appDb)
+        private readonly IMapper mapper;
+        private readonly IUploadServices uploadServices;
+        public ProductServices(ILogger<ProductServices> logger, ECommerceContext appDb, IMapper mapper, IUploadServices uploadServices)
         {
+            this.logger = logger;
             this.appDb = appDb;
+            this.mapper = mapper;
+            this.uploadServices = uploadServices;
         }
 
-        public async Task AddCategory(Category categoryModel)
+        public async Task AddCategoryAsync(CategoryDTO categoryModel)
         {
-            Category category = new Category()
+            logger.LogInformation($"Starting method {nameof(AddCategoryAsync)}.");
+
+            if (categoryModel == null)
             {
-                CategoryName = categoryModel.CategoryName
-            };
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(categoryModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if (categoryModel.Name == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(categoryModel)} is missing some required values")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var categoryExists = await appDb.Categories.Where(x => x.Name == categoryModel.Name).AnyAsync();
+
+            if (categoryExists)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There already is an element inside the database as the one to be added {nameof(categoryModel.Name)} is not unique")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var category = mapper.Map<Category>(categoryModel);
 
             await appDb.Categories.AddAsync(category);
             await appDb.SaveChangesAsync();
+
+            logger.LogInformation($"Finished method {nameof(AddCategoryAsync)}.");
         }
 
         public async Task AddCategoryToProduct(int productId, int categoryId)
@@ -38,27 +80,86 @@ namespace ECommerceServices
             await appDb.SaveChangesAsync();
         }
 
-        public async Task AddOption(Option optionModel)
+        public async Task AddOptionAsync(OptionDTO optionModel)
         {
-            Option option = new Option()
+            logger.LogInformation($"Starting method {nameof(AddOptionAsync)}.");
+
+            if (optionModel == null)
             {
-                OptionName = optionModel.OptionName,
-                OptionGroupId = optionModel.OptionGroupId
-            };
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(optionModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if (optionModel.Name == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(optionModel)} is missing some required values")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var optionExists = await appDb.Options.Where(x => x.Name == optionModel.Name).AnyAsync();
+
+            if (optionExists)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There already is an element inside the database as the one to be added {nameof(optionModel.Name)} is not unique")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var option = mapper.Map<Option>(optionModel);
 
             await appDb.Options.AddAsync(option);
             await appDb.SaveChangesAsync();
+
+            logger.LogInformation($"Finished method {nameof(AddOptionAsync)}.");
         }
 
-        public async Task AddOptionGroup(OptionGroup optionGroupModel)
+        public async Task AddOptionGroupAsync(OptionGroupDTO optionGroupModel)
         {
-            OptionGroup optionGroup = new OptionGroup()
+            logger.LogInformation($"Starting method {nameof(AddOptionGroupAsync)}.");
+
+            if (optionGroupModel == null)
             {
-                OptionGroupName = optionGroupModel.OptionGroupName
-            };
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(optionGroupModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if(optionGroupModel.Name == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(optionGroupModel)} is missing some required values")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var optionGroupExists = await appDb.OptionGroups.Where(x => x.Name == optionGroupModel.Name).AnyAsync();
+
+            if (optionGroupExists)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There already is an element inside the database as the one to be added {nameof(optionGroupModel.Name)} is not unique")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var optionGroup = mapper.Map<OptionGroup>(optionGroupModel);
 
             await appDb.OptionGroups.AddAsync(optionGroup);
             await appDb.SaveChangesAsync();
+
+            logger.LogInformation($"Finished method {nameof(AddOptionGroupAsync)}.");
         }
 
         public async Task AddOptionToProduct(int productId, int optionId)
@@ -73,24 +174,118 @@ namespace ECommerceServices
             await appDb.SaveChangesAsync();
         }
 
-        public Task CreateProduct(Product productModel)
+        public async Task CreateProductAsync(ProductDTO productModel, IFormFile productImage)
         {
-            throw new NotImplementedException();
+            logger.LogInformation($"Starting method {nameof(CreateProductAsync)}.");
+
+            if (productModel == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(productModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if (productModel.Name == null || productModel.Description == null || productModel.SKU == null || productModel.Options == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(productModel)} is missing some required values")
+                };
+                throw new HttpResponseException(message);
+            }
+           
+            var productExists = await appDb.Products.AnyAsync(x => x.Name == productModel.Name && x.SKU == productModel.SKU);
+
+            if (productExists)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"There already is an element inside the database as the one to be added {nameof(productModel.Name)} and {nameof(productModel.SKU)} are not unique")
+                };
+                throw new HttpResponseException(message);
+            }
+            
+            var product = mapper.Map<Product>(productModel);
+
+            await appDb.Products.AddAsync(product);
+            await appDb.SaveChangesAsync();
+
+            if(productImage == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(productImage)} cannot be null, check if you correctltly attached the image")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            await uploadServices.UploadProductPhotoAsync(productImage, product);
+
+            logger.LogInformation($"Finished method {nameof(CreateProductAsync)}.");
         }
 
-        public async Task DeleteProduct(int productId)
+        public async Task DeleteProductAsync(int productId)
         {
+            logger.LogInformation($"Starting method {nameof(DeleteProductAsync)}.");
+          
             var product = await appDb.Products.FindAsync(productId);
+
+            if(product == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The product with given id {nameof(productId)} cannot be removed beacause it doesn't exist in database, please check if the given id is correct")
+                };
+                throw new HttpResponseException(message);
+            }
+
             appDb.Products.Remove(product);
-            await appDb.SaveChangesAsync();         
+            await appDb.SaveChangesAsync();
+
+            logger.LogInformation($"Finished method {nameof(DeleteProductAsync)}.");
         }
 
-        public Task EditProduct(Product productModel)
+        public async Task<Product> EditProductAsync(ProductDTO productModel,IFormFile productImage)
         {
-            throw new NotImplementedException();
+            logger.LogInformation($"Starting method {nameof(EditProductAsync)}.");
+
+            if (productModel == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(productModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            Product product = await appDb.Products.FindAsync(productModel.Id);
+
+            if (product == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The product with given id {nameof(productModel.Id)} cannot be edited beacause it doesn't exist in database, please check if the given id is correct")
+                };
+                throw new HttpResponseException(message);
+            }
+           
+            mapper.Map(productModel, product);
+
+            await appDb.SaveChangesAsync();
+
+            if (productImage != null)
+            {
+                await uploadServices.UploadProductPhotoAsync(productImage, product);
+            }
+
+            logger.LogInformation($"Finished method {nameof(EditProductAsync)}.");
+
+            return product;
         }
 
-        public List<Product> FilterProducts(string productName,string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo)
+        public async Task<List<Product>> FilterProductsAsync(string productName,string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo)
         {
             IQueryable<Product> query = appDb.Products
                                            .Include(p => p.Category)
@@ -99,74 +294,109 @@ namespace ECommerceServices
 
             if(productName != null)
             {
-                query = query.Where(p => p.ProductName.ToLower().Contains(productName.ToLower()));                        
+                query = query.Where(p => p.Name.ToLower().Contains(productName.ToLower()));                        
             }
 
             if (categoryName != null)
             {
                 query = query.Where(p => 
-                        p.Category.CategoryName == categoryName);
+                        p.Category.Name == categoryName);
             }
 
             if (size != null)
             {
                 query = query.Where(p => 
-                        p.ProductOptions.Intersect(p.ProductOptions.Where(o => o.Option.OptionName == size.ToString()))
+                        p.ProductOptions.Intersect(p.ProductOptions.Where(o => o.Option.Name == size.ToString()))
                         .Any());
             }
 
             if (color != null)
             {
                 query = query.Where(p => 
-                        p.ProductOptions.Intersect(p.ProductOptions.Where(o => o.Option.OptionName == color.ToString()))
+                        p.ProductOptions.Intersect(p.ProductOptions.Where(o => o.Option.Name == color.ToString()))
                         .Any());
             }
 
             query = query.Where(p => 
-                    p.ProductPrice >= priceFrom && p.ProductPrice <= priceTo);
+                    p.Price >= priceFrom && p.Price <= priceTo);
 
             switch (sortType)
             {
                 case "name":
                     if (orderType == null)
-                        query = query.OrderBy(p => p.ProductName);
+                        query = query.OrderBy(p => p.Name);
                     else if (orderType == "desc")
-                        query = query.OrderByDescending(p => p.ProductName);
+                        query = query.OrderByDescending(p => p.Name);
                     break;
                 case "price":
                     if (orderType == null)
-                        query = query.OrderBy(p => p.ProductPrice);
+                        query = query.OrderBy(p => p.Price);
                     else if (orderType == "desc")
-                        query = query.OrderByDescending(p => p.ProductPrice);
+                        query = query.OrderByDescending(p => p.Price);
                     break;
                 default:
                     break;
             }
 
-            List<Product> products = query.ToList();
+            List<Product> products = await query.ToListAsync();
 
+            if (products == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent($"No products with given parameters were found in the database")
+                };
+                throw new HttpResponseException(message);
+            }
+           
             return products;
         }
 
-        public List<Product> GetAllProducts()
+        public async Task<List<Product>> GetAllProductsAsync()
         {
-            return appDb.Products
+            logger.LogInformation($"Starting method {nameof(GetAllProductsAsync)}.");           
+
+            var products = await appDb.Products
                         .Include(p => p.Category)
                         .Include(p => p.ProductOptions)
                             .ThenInclude(po => po.Option)
-                        .ToList();
-        }
+                        .ToListAsync();
 
-        public List<Product> GetCategoryProducts(int categoryId)
-        {
-            return appDb.Products
-                    .Where(p => p.CategoryId == categoryId)
-                    .ToList();
-        }
+            if (products == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.NotFound)
+                {
+                    Content = new StringContent($"There are no products in the database")
+                };
+                throw new HttpResponseException(message);
+            }
+           
+           logger.LogInformation($"Finished method {nameof(GetAllProductsAsync)}.");
 
-        public Product GetProduct(int productId)
+            return products;
+        }
+       
+        public async Task<Product> GetProductAsync(int productId)
         {
-            return appDb.Products.Include(p => p.ProductOptions).Where(p => p.ProductId == productId).FirstOrDefault();
+            logger.LogInformation($"Starting method {nameof(GetProductAsync)}.");
+
+            var product = await appDb.Products
+                                .Include(p => p.Category)
+                                .Include(p => p.ProductOptions)
+                                    .ThenInclude(po => po.Option)
+                                .SingleOrDefaultAsync(p => p.Id == productId);
+
+            if (product == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The product with given id {nameof(productId)} was not found in database, please check if the given id is correct")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            logger.LogInformation($"Finished method {nameof(GetProductAsync)}.");
+            return product;
         }
     }
 }

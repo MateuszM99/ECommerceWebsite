@@ -1,4 +1,5 @@
 ﻿using ECommerceModels.Authentication;
+using ECommerceModels.DTOs;
 using ECommerceModels.Models;
 using System;
 using System.Collections.Generic;
@@ -9,8 +10,11 @@ namespace ECommerceIServices
 {
     public interface IOrderServices
     {
-        Task<OrderResponse> createOrder(ApplicationUser user,int cartId, GuestUser guestUser,Address address, int deliveryId, int paymentId);
-        Task<OrderResponse> cancelOrder(int orderId);
+        Task createOrderGuest(OrderDTO orderModel);
+        Task createOrderUser(OrderDTO orderModel,ApplicationUser user);
+        Task cancelOrder(int orderId);
+
+        Task<List<Order>> getAllUsersOrdersAsync(ApplicationUser user);
         Task EditOrder();
     }
 }

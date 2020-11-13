@@ -22,17 +22,6 @@ namespace ECommerceServices
         public async Task<CartResponse> AddToCart(int? cartId, int productId,int? quantity,string optionName)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
-            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
-            var productOption = await appDb.Options.Where(o => o.OptionName == optionName).FirstOrDefaultAsync();
-
-            // If null return error indicator
-            if (productOption == null)
-                return new CartResponse { ErrorMessage = "Option not found" };
-
-            var productStock = appDb.ProductOption.Where(p => p.ProductId == productId && p.OptionId == productOption.OptionId).Select(p => p.ProductStock).FirstOrDefault();
-
-            if (productStock < quantity)
-                return new CartResponse { ErrorMessage = "Not enough products in stock" };
 
             if (cart == null)
             {
@@ -40,21 +29,32 @@ namespace ECommerceServices
                 await appDb.AddAsync(cart);
                 await appDb.SaveChangesAsync();
             }
-                      
+
+            var cartProduct = await appDb.CartProducts.FindAsync(cart.Id, productId);
+            var productOption = await appDb.Options.Where(o => o.Name == optionName).FirstOrDefaultAsync();
+
+            // If null return error indicator
+            if (productOption == null)
+                return new CartResponse { Status="Error", Message = "Option not found" };
+
+            var productStock = appDb.ProductOption.Where(p => p.ProductId == productId && p.OptionId == productOption.Id).Select(p => p.ProductStock).FirstOrDefault();
+
+            if (productStock < quantity)
+                return new CartResponse { Status = "Error", Message = "Not enough products in stock" };
+                               
             if(quantity == null)
             {
                 quantity = 1;
             }
          
-
             if (cartProduct == null)
             {
                 cartProduct = new CartProduct()
                 {
-                    CartId = cart.CartId,
+                    CartId = cart.Id,
                     ProductId = productId,
                     Quantity = (int)quantity,
-                    OptionId = productOption.OptionId,
+                    OptionId = productOption.Id,
                     Option = productOption
                 };
                 await appDb.CartProducts.AddAsync(cartProduct);
@@ -66,10 +66,12 @@ namespace ECommerceServices
 
             await appDb.SaveChangesAsync();
 
-            cart.TotalPrice = GetCartPrice(cart.CartId);
+            cart.TotalPrice = await GetCartPrice(cart.Id);
             await appDb.SaveChangesAsync();
+            var cartCount = await getCartProductsCount(cart.Id);
 
-            return new CartResponse { CartId = cart.CartId, SuccessMessage = "Succesfully added product to cart"};
+
+            return new CartResponse { CartId = cart.Id,CartPrice = cart.TotalPrice,CartCount = cartCount, Status="Success", Message = "Succesfully added product to cart"};
         }
 
         public async Task<CartResponse> RemoveFromCart(int? cartId, int productId)
@@ -78,14 +80,14 @@ namespace ECommerceServices
 
             if (cart == null)
             {
-                return new CartResponse {ErrorMessage = "You must specify cart id" };
+                return new CartResponse { Status = "Error", Message = "You must specify cart id" };
             }
 
-            var cartProduct = await appDb.CartProducts.FindAsync(cart.CartId, productId);
+            var cartProduct = await appDb.CartProducts.FindAsync(cart.Id, productId);
 
             if (cartProduct == null)
             {
-                return new CartResponse { ErrorMessage = "Not found product with given id" };
+                return new CartResponse { Status = "Error", Message = "Not found product with given id" };
             }
 
             if (cartProduct.Quantity <= 1)
@@ -98,26 +100,41 @@ namespace ECommerceServices
             }
 
             await appDb.SaveChangesAsync();
-            cart.TotalPrice = GetCartPrice(cart.CartId);
+            cart.TotalPrice = await GetCartPrice(cart.Id);
             await appDb.SaveChangesAsync();
+            var cartCount = await getCartProductsCount(cart.Id);
 
-            return new CartResponse { SuccessMessage = "Succesfully removed item from cart" };
+            return new CartResponse { CartPrice = cart.TotalPrice, CartCount = cartCount, Status = "Success", Message = "Succesfully removed item from cart" };
         }
 
-        public float GetCartPrice(int cartId)
+        public async Task<double> GetCartPrice(int cartId)
         {
-            return appDb.CartProducts
+            return await appDb.CartProducts
                         .Where(x => x.CartId == cartId)
-                        .Select(x => x.Product.ProductPrice * x.Quantity)
-                        .Sum();
+                        .Select(x => x.Product.Price * x.Quantity)
+                        .SumAsync();
         }
 
-        public List<ProductOptionQuantity> GetCartProducts(int cartId)
+        public async Task<List<ProductOptionQuantity>> GetCartProductsAsync(int cartId)
         {
-            var products = appDb.CartProducts.Include(cp => cp.Option).Where(c => c.CartId == cartId)
-                .Select(p => new ProductOptionQuantity(p.Product, p.Quantity,p.Option)).ToList();
+            var products = await appDb.CartProducts.Include(cp => cp.Option).Where(c => c.CartId == cartId)
+                .Select(p => new ProductOptionQuantity(p.Product, p.Quantity,p.Option)).ToListAsync();
 
             return products;
-        }          
+        }
+
+        public async Task<int> getCartProductsCount(int cartId)
+        {
+            List<ProductOptionQuantity> productQuantities = await GetCartProductsAsync(cartId);
+
+            int count = 0;
+
+            foreach (var product in productQuantities)
+            {
+                count += 1 * product.quantity;
+            }
+
+            return count;
+        }
     }
 }

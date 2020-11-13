@@ -5,6 +5,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
+using ECommerceData;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
 using ECommerceModels.Models;
@@ -13,6 +14,7 @@ using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
@@ -24,20 +26,19 @@ namespace ECommerceWebApi.Controllers
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly RoleManager<IdentityRole> roleManager;
+        private readonly ECommerceContext appDb;
         private readonly IConfiguration _configuration;
         private readonly IEmailSender emailSender;
 
-        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IEmailSender emailSender)
+        public AuthenticateController(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IEmailSender emailSender, ECommerceContext appDb)
         {
             this.userManager = userManager;
             this.roleManager = roleManager;
+            this.appDb = appDb;
             _configuration = configuration;
             this.emailSender = emailSender;
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("getToken")]
         public IActionResult getSessionToken()
         {
             string token = Convert.ToBase64String(Guid.NewGuid().ToByteArray());
@@ -54,7 +55,7 @@ namespace ECommerceWebApi.Controllers
         [Route("login")]
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
-            var user = await userManager.FindByNameAsync(model.Username);
+            var user = await userManager.Users.Include(u => u.Address).SingleAsync(u => u.UserName == model.Username);
             if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
             {
                 var userRoles = await userManager.GetRolesAsync(user);
@@ -97,7 +98,11 @@ namespace ECommerceWebApi.Controllers
         {
             var userExists = await userManager.FindByNameAsync(model.Username);
             if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User with that username already exists!" });
+
+            var userEmailExists = await userManager.FindByEmailAsync(model.Email);
+            if(userEmailExists != null)
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User with that email already exists!" });
 
             ApplicationUser user = new ApplicationUser()
             {
@@ -106,11 +111,12 @@ namespace ECommerceWebApi.Controllers
                 PhoneNumber = model.Phone,
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
-                UserName = model.Username
+                UserName = model.Username,
+                Address = new Address()
             };
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token }, Request.Scheme);
@@ -118,7 +124,7 @@ namespace ECommerceWebApi.Controllers
            
             await emailSender.SendEmailAsync(model.Email, "Confirm your account", message);
 
-            return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+            return Ok(new AuthResponse { Status = "Success", Message = "User created successfully!" });
         }
 
         [HttpPost]
@@ -127,7 +133,7 @@ namespace ECommerceWebApi.Controllers
         {
             var userExists = await userManager.FindByNameAsync(model.Username);
             if (userExists != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User already exists!" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User already exists!" });
 
             ApplicationUser user = new ApplicationUser()
             {
@@ -137,7 +143,7 @@ namespace ECommerceWebApi.Controllers
             };
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User creation failed! Please check user details and try again." });
 
             if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
                 await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
@@ -149,7 +155,7 @@ namespace ECommerceWebApi.Controllers
                 await userManager.AddToRoleAsync(user, UserRoles.Admin);
             }
 
-            return Ok(new Response { Status = "Success", Message = "User created successfully!" });
+            return Ok(new AuthResponse { Status = "Success", Message = "User created successfully!" });
         }
    
         [HttpPost]
@@ -185,56 +191,57 @@ namespace ECommerceWebApi.Controllers
 
             await emailSender.SendEmailAsync(user.Email, "Confirm your account", message);
 
-            return Ok(new Response { Status = "Success", Message = "Message sent!" });
+            return Ok(new AuthResponse { Status = "Success", Message = "Message sent!" });
         }
-     
+
         [EnableCors("Policy")]
         [HttpPost]
         [Authorize]
         [Route("editUser")]
-        public async Task<IActionResult> EditUserInfo([FromBody] EditUserModel userModel,string username)
+        public async Task<IActionResult> EditUserInfo([FromBody] EditUserModel userModel, string username)
         {
             var user = await userManager.FindByNameAsync(username);
             if (user == null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User doesn't exist!" });
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User doesn't exist!" });
 
-            if (userModel.FirstName != null)
+            if (userModel.FirstName != null && userModel.FirstName != "")
                 user.FirstName = userModel.FirstName;
-            if (userModel.LastName != null)
+            if (userModel.LastName != null && userModel.LastName != "")
                 user.LastName = userModel.LastName;
-            if (userModel.Email != null)
+            if (userModel.Email != null && userModel.Email != "")
                 user.Email = userModel.Email;
-            if (userModel.Phone != null)
+            if (userModel.Phone != null && userModel.Phone != "")
                 user.PhoneNumber = userModel.Phone;
 
             await userManager.UpdateAsync(user);
 
-            return Ok(new Response { Status = "Success", Message = "Changes saved successfully" });
+            return Ok(new { user, response = new AuthResponse { Status = "Success", Message = "Changes saved successfully" } });
         }
 
+        
         [HttpPost]
         [Authorize]
         [Route("editAddress")]
         public async Task<IActionResult> EditAddressInfo([FromBody]Address addressModel, string username)
         {
-            var user = await userManager.FindByNameAsync(username);
-            if (user != null)
-                return StatusCode(StatusCodes.Status500InternalServerError, new Response { Status = "Error", Message = "User doesn't exist!" });
-
-            if (addressModel.Street != null)
+            var user = await userManager.Users.Include(u => u.Address).SingleAsync(u => u.UserName == username);
+            if (user == null)
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User doesn't exist!" });
+                
+            if (addressModel.Street != null && addressModel.Street != "")
                 user.Address.Street = addressModel.Street;
-            if (addressModel.Country != null)
+            if (addressModel.Country != null && addressModel.Country != "")
                 user.Address.Country = addressModel.Country;
-            if (addressModel.City != null)
+            if (addressModel.City != null && addressModel.City != "")
                 user.Address.City = addressModel.City;
-            if (addressModel.PostCode != null)
+            if (addressModel.PostCode != null && addressModel.PostCode != "")
                 user.Address.PostCode = addressModel.PostCode;
-            if (addressModel.HouseNumber != null)
+            if (addressModel.HouseNumber != null && addressModel.HouseNumber != "")
                 user.Address.HouseNumber = addressModel.HouseNumber;
 
             await userManager.UpdateAsync(user);
 
-            return Ok(new Response { Status = "Success", Message = "Changes saved successfully" });
+            return Ok(new { user, response = new AuthResponse { Status = "Success", Message = "Changes saved successfully" } });
         }
 
 

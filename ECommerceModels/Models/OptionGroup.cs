@@ -8,8 +8,9 @@ namespace ECommerceModels.Models
     public class OptionGroup
     {
         [Key]
-        public int OptionGroupId { get; set; }
-        public string OptionGroupName { get; set; }
+        public int Id { get; set; }
+        public string Name { get; set; }
+
         public IList<Option> Options { get; set; }
     }
 }
