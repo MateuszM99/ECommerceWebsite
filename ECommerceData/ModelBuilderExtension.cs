@@ -283,7 +283,34 @@ namespace ECommerceData
                     OptionId = 5,
                     ProductStock = 5
                 }
-                );         
+                );
+
+            modelBuilder.Entity<DeliveryMethod>()
+                .HasData(
+                    new DeliveryMethod
+                    {
+                        Id = 1,
+                        Name = "DPD Courier",
+                        Price = 14.99
+                    },
+                    new DeliveryMethod
+                    {
+                        Id = 2,
+                        Name = "DHL Courier",
+                        Price = 12.99
+                    }
+                );
+
+            modelBuilder.Entity<PaymentMethod>()
+                .HasData(
+                    new PaymentMethod
+                    {
+                        Id = 1,
+                        Name = "Cash on delivery",                     
+                    }
+                );
+
+
         }
         
         public static void SeedUsersData(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)

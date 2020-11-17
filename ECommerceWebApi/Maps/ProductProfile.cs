@@ -10,7 +10,7 @@ namespace ECommerceWebApi.Maps
         public ProductProfile()
         {
             CreateMap<Product, ProductDTO>()
-                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.ProductOptions.Select(y => y.Option).ToList()))
+                .ForMember(dest => dest.Options, opt => opt.MapFrom(src => src.ProductOptions))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.Category.Name));
 
             CreateMap<ProductDTO, Product>()
@@ -29,8 +29,10 @@ namespace ECommerceWebApi.Maps
                 .ForMember(dest => dest.Option, opt => opt.MapFrom(src => src))
                 .ForMember(dest => dest.ProductStock, opt => opt.MapFrom(src => src.Stock));
 
-            
-                            
+            CreateMap<ProductOption, OptionDTO>()
+                .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.OptionId))
+                .ForMember(dest => dest.Name, opt => opt.MapFrom(src => src.Option.Name))
+                .ForMember(dest => dest.Stock, opt => opt.MapFrom(src => src.ProductStock));
         }
     }
 }

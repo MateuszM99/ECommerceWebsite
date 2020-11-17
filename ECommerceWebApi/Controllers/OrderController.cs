@@ -11,9 +11,11 @@ using ECommerceModels.DTOs;
 using ECommerceModels.Models;
 using EllipticCurve;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 
@@ -38,6 +40,7 @@ namespace ECommerceWebApi.Controllers
             this.mapper = mapper;
         }
                   
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("createOrder")]
         public async Task<IActionResult> CreateOrder([FromBody]OrderDTO orderModel)
@@ -100,6 +103,26 @@ namespace ECommerceWebApi.Controllers
                 logger.LogError($"{ex.Message}");
                 throw;
             }
+        }
+
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getDeliveries")]
+        public async Task<IActionResult> GetAvailableDeliveryMethods()
+        {
+            var deliveryMethods = await appDb.DeliveryMethods.ToListAsync();
+
+            return Ok(new {deliveryMethods});
+        }
+
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getPayments")]
+        public async Task<IActionResult> GetAvailablePaymentMethods()
+        {
+            var paymentMethods = await appDb.PaymentMethods.ToListAsync();
+
+            return Ok(new { paymentMethods });
         }
 
 

@@ -23,6 +23,7 @@ using ECommerceModels.Models;
 using System.Reflection;
 using AutoMapper;
 using ECommerceWebApi.Maps;
+using ECommerceWebApi.Maps.RequestModelsMaps;
 
 namespace ECommerceWebApi
 {
@@ -79,6 +80,7 @@ namespace ECommerceWebApi
                 mc.AddProfile(new CategoryProfile());
                 mc.AddProfile(new AddressProfile());
                 mc.AddProfile(new OrderProfile());
+                mc.AddProfile(new CreateProductModelProfile());
             });
 
             IMapper mapper = mapperConfig.CreateMapper();

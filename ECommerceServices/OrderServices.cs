@@ -189,11 +189,7 @@ namespace ECommerceServices
             order.AddedAt = DateTime.Now;
             order.ModifiedAt = DateTime.Now;
             order.isConfirmed = false;
-            
-
-            await appDb.Orders.AddAsync(order);
-            await appDb.SaveChangesAsync();
-
+                  
             var cartItems = await appDb.CartProducts
                 .Where(c => c.CartId == orderModel.CartId)
                 .Include(o => o.Option)
@@ -208,6 +204,9 @@ namespace ECommerceServices
                 throw new HttpResponseException(message);
             }
 
+            await appDb.Orders.AddAsync(order);
+            await appDb.SaveChangesAsync();
+
             List<OrderItem> orderItems = new List<OrderItem>();
 
             foreach (var cartItem in cartItems)
@@ -221,13 +220,14 @@ namespace ECommerceServices
                 };
 
                 // remove the amount of ordered products from product stock
-                var productOption = await appDb.ProductOption.FindAsync(cartItem.ProductId, cartItem.OptionId);
-                productOption.ProductStock -= cartItem.Quantity;
+                var productOption = await appDb.ProductOption.FindAsync(cartItem.OptionId,cartItem.ProductId);
+                productOption.ProductStock -= 1;
 
                 orderItems.Add(orderItem);               
-            }
+            }          
 
             await appDb.OrderItems.AddRangeAsync(orderItems);
+            appDb.CartProducts.RemoveRange(cartItems);
             appDb.Carts.Remove(cart);
             await appDb.SaveChangesAsync();           
         }

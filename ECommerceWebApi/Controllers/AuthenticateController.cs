@@ -112,7 +112,7 @@ namespace ECommerceWebApi.Controllers
                 Email = model.Email,
                 SecurityStamp = Guid.NewGuid().ToString(),
                 UserName = model.Username,
-                Address = new Address()
+                Address = null
             };
             var result = await userManager.CreateAsync(user, model.Password);
             if (!result.Succeeded)
@@ -218,13 +218,19 @@ namespace ECommerceWebApi.Controllers
             return Ok(new { user, response = new AuthResponse { Status = "Success", Message = "Changes saved successfully" } });
         }
 
-        
+
         [HttpPost]
         [Authorize]
         [Route("editAddress")]
         public async Task<IActionResult> EditAddressInfo([FromBody]Address addressModel, string username)
         {
             var user = await userManager.Users.Include(u => u.Address).SingleAsync(u => u.UserName == username);
+
+            if (user.Address == null)
+            {
+                user.Address = new Address();
+            }
+
             if (user == null)
                 return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User doesn't exist!" });
                 

@@ -13,7 +13,8 @@ using ECommerceModels.Authentication;
 using ECommerceModels.DTOs;
 using ECommerceModels.Enums;
 using ECommerceModels.Models;
-using ECommerceModels.SpecificationPattern;
+using ECommerceModels.RequestModels.ProductRequestModels;
+using ECommerceModels.Responses;
 using ECommerceWebApi.ModlBinder;
 using EllipticCurve.Utils;
 using Microsoft.AspNetCore.Cors;
@@ -45,17 +46,21 @@ namespace ECommerceWebApi.Controllers
             this.mapper = mapper;
         }
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("addProduct")]
-        public async Task<IActionResult> CreateProduct([ModelBinder(BinderType = typeof(JsonModelBinder))] ProductDTO productModel,IFormFile productImage)
+        public async Task<IActionResult> CreateProduct([FromForm]CreateProductModel createProductModel)
         {
             logger.LogInformation($"Starting method {nameof(CreateProduct)}.");  
             try
-            {
-                await productServices.CreateProductAsync(productModel,productImage);
+            {               
+                await productServices.createProductAsync(createProductModel);
 
                 logger.LogInformation($"Finished method {nameof(CreateProduct)}");
-                return Ok();
+                return Ok(new ProductResponse
+                {
+                    Message = "Succesfully added product"
+                });
             } 
             catch(System.Web.Http.HttpResponseException ex)
             {
@@ -64,6 +69,7 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("deleteProduct")]
         public async Task<IActionResult> DeleteProduct(int productId)
@@ -71,10 +77,13 @@ namespace ECommerceWebApi.Controllers
             logger.LogInformation($"Starting method {nameof(DeleteProduct)}.");
             try
             {
-                await productServices.DeleteProductAsync(productId);
+                await productServices.deleteProductAsync(productId);
 
                 logger.LogInformation($"Finished method {nameof(DeleteProduct)}");
-                return Ok();
+                return Ok(new ProductResponse
+                {
+                    Message = "Succesfully deleted product"
+                });
             }
             catch(System.Web.Http.HttpResponseException ex)
             {
@@ -90,7 +99,7 @@ namespace ECommerceWebApi.Controllers
             logger.LogInformation($"Starting method {nameof(EditProduct)}.");
             try
             {
-               Product product = await productServices.EditProductAsync(productModel, productImage);
+               Product product = await productServices.editProductAsync(productModel, productImage);
 
                var productDTO = mapper.Map<ProductDTO>(product);
 
@@ -104,8 +113,6 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
-
-
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getProducts")]
@@ -115,7 +122,7 @@ namespace ECommerceWebApi.Controllers
             
             try
             {
-               var products = await productServices.GetAllProductsAsync();
+               var products = await productServices.getAllProductsAsync();
 
                var productsDTO = mapper.Map<List<ProductDTO>>(products);
 
@@ -138,7 +145,7 @@ namespace ECommerceWebApi.Controllers
 
             try
             {
-                var product = await productServices.GetProductAsync(productId);
+                var product = await productServices.getProductAsync(productId);
 
                 var productDTO = mapper.Map<ProductDTO>(product);
 
@@ -151,18 +158,7 @@ namespace ECommerceWebApi.Controllers
                 throw;
             }
         }
-
-        [EnableCors("Policy")]
-        [HttpGet]
-        [Route("getCategories")]
-        public async Task<IActionResult> GetCategories()
-        {
-           var categories = await appDb.Categories.ToListAsync();
-           var categoriesDTO = mapper.Map<List<CategoryDTO>>(categories);
-
-           return Ok(categoriesDTO);
-        }
-
+      
         [EnableCors("Policy")]
         [HttpGet]
         [Route("products")]
@@ -172,7 +168,7 @@ namespace ECommerceWebApi.Controllers
 
             try
             {
-                List<Product> products = await productServices.FilterProductsAsync(productName, categoryName, sortType, orderType, size, color, priceFrom, priceTo);
+                List<Product> products = await productServices.filterProductsAsync(productName, categoryName, sortType, orderType, size, color, priceFrom, priceTo);
 
                 var productsDTO = mapper.Map<List<ProductDTO>>(products);
 
@@ -188,60 +184,6 @@ namespace ECommerceWebApi.Controllers
             
         }
 
-       
-
-        [HttpPost]
-        [Route("addOptionGroup")]
-        public async Task<IActionResult> AddOptionGroup([FromBody]OptionGroupDTO optionGroupModel)
-        {
-            logger.LogInformation($"Starting method {nameof(AddOptionGroup)}.");
-
-            try
-            {
-                await productServices.AddOptionGroupAsync(optionGroupModel);
-
-                logger.LogInformation($"Finished method {nameof(AddOptionGroup)}.");
-
-                return Ok();
-            }
-            catch (System.Web.Http.HttpResponseException ex)
-            {
-                logger.LogError($"{ex.Message}");
-                throw;
-            }
-        }
-
-        [EnableCors("Policy")]
-        [HttpPost]
-        [Route("addOptionToProduct")]
-        public async Task<IActionResult> AddOptionToProduct(int productId,int optionId)
-        {
-            await productServices.AddOptionToProduct(productId, optionId);
-
-            return Ok();
-        }
-
-        [HttpPost]
-        [Route("addOption")]
-        public async Task<IActionResult> AddOption([FromBody]OptionDTO optionModel)
-        {
-            logger.LogInformation($"Starting method {nameof(AddOption)}.");
-
-            try
-            {
-                await productServices.AddOptionAsync(optionModel);
-
-                logger.LogInformation($"Finished method {nameof(AddOption)}.");
-
-                return Ok();
-            }
-            catch (System.Web.Http.HttpResponseException ex)
-            {
-                logger.LogError($"{ex.Message}");
-                throw;
-            }
-        }
-
         [HttpPost]
         [Route("addCategory")]
         public async Task<IActionResult> AddCategory([FromBody]CategoryDTO categoryModel)
@@ -250,7 +192,7 @@ namespace ECommerceWebApi.Controllers
 
             try
             {
-                await productServices.AddCategoryAsync(categoryModel);
+                await productServices.addCategoryAsync(categoryModel);
 
                 logger.LogInformation($"Finished method {nameof(AddCategory)}.");
 
@@ -265,9 +207,51 @@ namespace ECommerceWebApi.Controllers
 
         [HttpPost]
         [Route("addCategoryTo")]
-        public async Task<IActionResult> AddCategoryTo(int productId,int categoryId)
+        public async Task<IActionResult> AddCategoryTo(int productId, int categoryId)
         {
-            await productServices.AddCategoryToProduct(productId, categoryId);
+            await productServices.addCategoryToProduct(productId, categoryId);
+
+            return Ok();
+        }
+
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("getCategories")]
+        public async Task<IActionResult> GetCategories()
+        {
+            var categories = await appDb.Categories.ToListAsync();
+            var categoriesDTO = mapper.Map<List<CategoryDTO>>(categories);
+
+            return Ok(categoriesDTO);
+        }
+
+        [HttpPost]
+        [Route("addOption")]
+        public async Task<IActionResult> AddOption([FromBody]OptionDTO optionModel)
+        {
+            logger.LogInformation($"Starting method {nameof(AddOption)}.");
+
+            try
+            {
+                await productServices.addOptionAsync(optionModel);
+
+                logger.LogInformation($"Finished method {nameof(AddOption)}.");
+
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("addOptionToProduct")]
+        public async Task<IActionResult> AddOptionToProduct(int productId, int optionId)
+        {
+            await productServices.addOptionToProduct(productId, optionId);
 
             return Ok();
         }
@@ -296,6 +280,39 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
+        [HttpPost]
+        [Route("addOptionGroup")]
+        public async Task<IActionResult> AddOptionGroup([FromBody]OptionGroupDTO optionGroupModel)
+        {
+            logger.LogInformation($"Starting method {nameof(AddOptionGroup)}.");
 
+            try
+            {
+                await productServices.addOptionGroupAsync(optionGroupModel);
+
+                logger.LogInformation($"Finished method {nameof(AddOptionGroup)}.");
+
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+       
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("addStockToProductOption")]
+        public async Task<IActionResult> AddStockToProductOption([FromBody]AddStockModel addStockModel)
+        {
+            await productServices.addStockToProductOption(addStockModel);
+
+            return Ok(new ProductResponse
+            {
+                Message = "Succesfully added stock"
+            });
+        }
+                     
     }
 }

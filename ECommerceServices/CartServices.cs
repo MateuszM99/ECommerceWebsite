@@ -19,7 +19,7 @@ namespace ECommerceServices
             this.appDb = appDb;
         }
 
-        public async Task<CartResponse> AddToCart(int? cartId, int productId,int? quantity,string optionName)
+        public async Task<CartResponse> addToCartAsync(int? cartId, int productId,int? quantity,string optionName)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
 
@@ -60,21 +60,28 @@ namespace ECommerceServices
                 await appDb.CartProducts.AddAsync(cartProduct);
             }
             else
-            {
+            {          
+
+                if(productStock <= cartProduct.Quantity)
+                {
+                    return new CartResponse { Status = "Error", Message = "Not enough products in stock" };
+                }
+
                 cartProduct.Quantity += (int)quantity;
             }
 
             await appDb.SaveChangesAsync();
 
-            cart.TotalPrice = await GetCartPrice(cart.Id);
+            cart.TotalPrice = await getCartPriceAsync(cart.Id);
             await appDb.SaveChangesAsync();
-            var cartCount = await getCartProductsCount(cart.Id);
+            var cartCount = await getCartProductsCountAsync(cart.Id);
+            var cartProducts = await getCartProductsAsync(cart.Id);
 
 
-            return new CartResponse { CartId = cart.Id,CartPrice = cart.TotalPrice,CartCount = cartCount, Status="Success", Message = "Succesfully added product to cart"};
+            return new CartResponse { CartId = cart.Id,CartPrice = cart.TotalPrice,CartCount = cartCount, CartProducts = cartProducts, Status="Success", Message = "Succesfully added product to cart"};
         }
 
-        public async Task<CartResponse> RemoveFromCart(int? cartId, int productId)
+        public async Task<CartResponse> removeFromCartAsync(int? cartId, int productId)
         {
             var cart = await appDb.Carts.FindAsync(cartId);
 
@@ -100,14 +107,15 @@ namespace ECommerceServices
             }
 
             await appDb.SaveChangesAsync();
-            cart.TotalPrice = await GetCartPrice(cart.Id);
+            cart.TotalPrice = await getCartPriceAsync(cart.Id);
             await appDb.SaveChangesAsync();
-            var cartCount = await getCartProductsCount(cart.Id);
+            var cartCount = await getCartProductsCountAsync(cart.Id);
+            var cartProducts = await getCartProductsAsync(cart.Id);
 
-            return new CartResponse { CartPrice = cart.TotalPrice, CartCount = cartCount, Status = "Success", Message = "Succesfully removed item from cart" };
+            return new CartResponse { CartId = cart.Id,CartPrice = cart.TotalPrice, CartCount = cartCount, CartProducts = cartProducts, Status = "Success", Message = "Succesfully removed item from cart" };
         }
 
-        public async Task<double> GetCartPrice(int cartId)
+        public async Task<double> getCartPriceAsync(int cartId)
         {
             return await appDb.CartProducts
                         .Where(x => x.CartId == cartId)
@@ -115,7 +123,7 @@ namespace ECommerceServices
                         .SumAsync();
         }
 
-        public async Task<List<ProductOptionQuantity>> GetCartProductsAsync(int cartId)
+        public async Task<List<ProductOptionQuantity>> getCartProductsAsync(int cartId)
         {
             var products = await appDb.CartProducts.Include(cp => cp.Option).Where(c => c.CartId == cartId)
                 .Select(p => new ProductOptionQuantity(p.Product, p.Quantity,p.Option)).ToListAsync();
@@ -123,9 +131,9 @@ namespace ECommerceServices
             return products;
         }
 
-        public async Task<int> getCartProductsCount(int cartId)
+        public async Task<int> getCartProductsCountAsync(int cartId)
         {
-            List<ProductOptionQuantity> productQuantities = await GetCartProductsAsync(cartId);
+            List<ProductOptionQuantity> productQuantities = await getCartProductsAsync(cartId);
 
             int count = 0;
 

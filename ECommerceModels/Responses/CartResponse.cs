@@ -1,5 +1,5 @@
 ﻿using ECommerceModels.Responses;
-
+using System.Collections.Generic;
 
 namespace ECommerceModels.Models
 {
@@ -8,6 +8,6 @@ namespace ECommerceModels.Models
         public int? CartId { get; set; }
         public int? CartCount { get; set; }
         public double CartPrice { get; set; }
-      
+        public List<ProductOptionQuantity> CartProducts { get; set; }
     }
 }

@@ -4,7 +4,8 @@ using System.Text;
 
 namespace ECommerceModels.Responses
 {
-    class ProductResponse
+    public class ProductResponse
     {
+        public string Message { get; set; }
     }
 }
