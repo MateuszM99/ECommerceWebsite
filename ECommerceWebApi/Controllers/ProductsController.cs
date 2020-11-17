@@ -15,7 +15,6 @@ using ECommerceModels.Enums;
 using ECommerceModels.Models;
 using ECommerceModels.RequestModels.ProductRequestModels;
 using ECommerceModels.Responses;
-using ECommerceWebApi.ModlBinder;
 using EllipticCurve.Utils;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -72,12 +71,12 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpPost]
         [Route("deleteProduct")]
-        public async Task<IActionResult> DeleteProduct(int productId)
+        public async Task<IActionResult> DeleteProduct(DeleteProductModel deleteProductModel)
         {
             logger.LogInformation($"Starting method {nameof(DeleteProduct)}.");
             try
             {
-                await productServices.deleteProductAsync(productId);
+                await productServices.deleteProductAsync(deleteProductModel);
 
                 logger.LogInformation($"Finished method {nameof(DeleteProduct)}");
                 return Ok(new ProductResponse
@@ -91,7 +90,8 @@ namespace ECommerceWebApi.Controllers
                 throw;
             }
         }
-
+        
+        /*
         [HttpPost]
         [Route("editProduct")]
         public async Task<IActionResult> EditProduct([ModelBinder(BinderType = typeof(JsonModelBinder))] ProductDTO productModel, IFormFile productImage)
@@ -111,7 +111,7 @@ namespace ECommerceWebApi.Controllers
                 logger.LogError($"{ex.Message}");
                 throw;
             }
-        }
+        }*/
 
         [EnableCors("Policy")]
         [HttpGet]
@@ -162,13 +162,13 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpGet]
         [Route("products")]
-        public async Task<IActionResult> FilterProducts(string productName,string categoryName,string sortType,string orderType,Size? size,Color? color,float? priceFrom=0,float? priceTo=99999)
+        public async Task<IActionResult> FilterProducts(string productName,string categoryName,string sortType,string orderType,Size? size,float? priceFrom=0,float? priceTo=99999)
         {
             logger.LogInformation($"Starting method {nameof(FilterProducts)}.");
 
             try
             {
-                List<Product> products = await productServices.filterProductsAsync(productName, categoryName, sortType, orderType, size, color, priceFrom, priceTo);
+                List<Product> products = await productServices.filterProductsAsync(productName, categoryName, sortType, orderType, size, priceFrom, priceTo);
 
                 var productsDTO = mapper.Map<List<ProductDTO>>(products);
 
@@ -184,6 +184,7 @@ namespace ECommerceWebApi.Controllers
             
         }
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("addCategory")]
         public async Task<IActionResult> AddCategory([FromBody]CategoryDTO categoryModel)
@@ -196,7 +197,35 @@ namespace ECommerceWebApi.Controllers
 
                 logger.LogInformation($"Finished method {nameof(AddCategory)}.");
 
-                return Ok();
+                return Ok(new ProductResponse
+                {
+                    Message = "Category added succesfully"
+                });
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("deleteCategory")]
+        public async Task<IActionResult> DeleteCategory([FromBody]CategoryDTO categoryModel)
+        {
+            logger.LogInformation($"Starting method {nameof(DeleteCategory)}.");
+
+            try
+            {
+                await productServices.deleteCategoryAsync(categoryModel);
+
+                logger.LogInformation($"Finished method {nameof(DeleteCategory)}.");
+
+                return Ok(new ProductResponse
+                {
+                    Message = "Category deleted succesfully"
+                });
             }
             catch (System.Web.Http.HttpResponseException ex)
             {
@@ -225,6 +254,7 @@ namespace ECommerceWebApi.Controllers
             return Ok(categoriesDTO);
         }
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("addOption")]
         public async Task<IActionResult> AddOption([FromBody]OptionDTO optionModel)
@@ -237,7 +267,35 @@ namespace ECommerceWebApi.Controllers
 
                 logger.LogInformation($"Finished method {nameof(AddOption)}.");
 
-                return Ok();
+                return Ok(new ProductResponse
+                {
+                    Message = "Option created succesfully"
+                });
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("deleteOption")]
+        public async Task<IActionResult> DeleteOption([FromBody]OptionDTO optionModel)
+        {
+            logger.LogInformation($"Starting method {nameof(DeleteOption)}.");
+
+            try
+            {
+                await productServices.deleteOptionAsync(optionModel);
+
+                logger.LogInformation($"Finished method {nameof(DeleteOption)}.");
+
+                return Ok(new ProductResponse
+                {
+                    Message = "Option deleted succesfully"
+                });
             }
             catch (System.Web.Http.HttpResponseException ex)
             {
@@ -279,28 +337,7 @@ namespace ECommerceWebApi.Controllers
                 throw;
             }
         }
-
-        [HttpPost]
-        [Route("addOptionGroup")]
-        public async Task<IActionResult> AddOptionGroup([FromBody]OptionGroupDTO optionGroupModel)
-        {
-            logger.LogInformation($"Starting method {nameof(AddOptionGroup)}.");
-
-            try
-            {
-                await productServices.addOptionGroupAsync(optionGroupModel);
-
-                logger.LogInformation($"Finished method {nameof(AddOptionGroup)}.");
-
-                return Ok();
-            }
-            catch (System.Web.Http.HttpResponseException ex)
-            {
-                logger.LogError($"{ex.Message}");
-                throw;
-            }
-        }
-       
+      
         [EnableCors("Policy")]
         [HttpPost]
         [Route("addStockToProductOption")]

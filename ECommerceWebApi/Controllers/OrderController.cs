@@ -84,6 +84,25 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
+        public async Task<IActionResult> GetAllOrders()
+        {
+            logger.LogInformation($"Starting method {nameof(GetAllOrders)}.");
+            try
+            {             
+                var orders = await orderServices.getAllOrdersAsync();
+
+                var ordersDTO = mapper.Map<List<OrderDTO>>(orders);
+
+                logger.LogInformation($"Finished method {nameof(GetAllOrders)}");
+                return Ok(ordersDTO);
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
         public async Task<IActionResult> GetAllUsersOrders()
         {
             logger.LogInformation($"Starting method {nameof(GetAllUsersOrders)}.");

@@ -23,7 +23,7 @@ namespace ECommerceModels.Models
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
-        public IList<OrderItem> Items { get; set; }
+        public IList<OrderProduct> Products { get; set; }
         public int AddressId { get; set; }
         public Address Address { get; set; }
         public int DeliveryMethodId { get; set; }

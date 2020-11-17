@@ -2,6 +2,7 @@
 using ECommerceModels.Models;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECommerceData
 {
@@ -15,13 +16,12 @@ namespace ECommerceData
 
         public DbSet<Product> Products { get; set; }
         public DbSet<Category> Categories { get; set; }
-        public DbSet<Option> Options { get; set; }
-        public DbSet<OptionGroup> OptionGroups { get; set; }
-        public DbSet<ProductOption> ProductOption { get; set; }
+        public DbSet<Option> Options { get; set; }      
+        public DbSet<ProductOption> ProductOptions { get; set; }
         public DbSet<ShoppingCart> Carts { get; set; }
         public DbSet<CartProduct> CartProducts { get; set; }
         public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<OrderProduct> OrderProducts { get; set; }
         public DbSet<Address> Addresses { get; set; }
         public DbSet<DeliveryMethod> DeliveryMethods { get; set; }
         public DbSet<PaymentMethod> PaymentMethods { get; set; }
@@ -31,17 +31,22 @@ namespace ECommerceData
             base.OnModelCreating(builder);
 
             builder.SeedData();
+
+            builder.Entity<Product>()               
+                .HasKey(key => new { key.Id, key.VariationId });
             
-            builder.Entity<ProductOption>().HasKey(key => new { key.OptionId, key.ProductId });
+            
 
-            builder.Entity<CartProduct>().HasKey(key => new { key.CartId, key.ProductId });
+            builder.Entity<ProductOption>().HasKey(key => new { key.OptionId,key.ProductId,key.ProductVariationId});
 
-            builder.Entity<OrderItem>().HasKey(key => new { key.OrderId, key.ProductId });
+            builder.Entity<CartProduct>().HasKey(key => new { key.CartId, key.ProductId, key.ProductVariationId});
+
+            builder.Entity<OrderProduct>().HasKey(key => new { key.OrderId, key.ProductId, key.ProductVariationId});
 
             builder.Entity<CartProduct>()
                 .HasOne<Product>(p => p.Product)
                 .WithMany(c => c.CartProducts)
-                .HasForeignKey(p => p.ProductId);
+                .HasForeignKey(p => new { p.ProductId,p.ProductVariationId});
 
             builder.Entity<CartProduct>()
                 .HasOne<ShoppingCart>(c => c.Cart)
@@ -56,11 +61,12 @@ namespace ECommerceData
             builder.Entity<ProductOption>()
                 .HasOne<Product>(p => p.Product)
                 .WithMany(po => po.ProductOptions)
-                .HasForeignKey(p => p.ProductId);
+                .HasForeignKey(p => new { p.ProductId, p.ProductVariationId });
 
             builder.Entity<ProductOption>()
                .HasOne<Option>(o => o.Option)
                .WithMany(po => po.ProductOptions)
+
                .HasForeignKey(o => o.OptionId);
 
             builder.Entity<ApplicationUser>()
@@ -75,27 +81,23 @@ namespace ECommerceData
             builder.Entity<Category>()
                .HasMany(p => p.Products)
                .WithOne(c => c.Category);
-
-            builder.Entity<OptionGroup>()
-               .HasMany(o => o.Options)
-               .WithOne(og => og.OptionGroup);
-
+           
             builder.Entity<ShoppingCart>()
                 .HasOne(u => u.AppUser)
                 .WithOne(c => c.Cart)
                 .HasForeignKey<ShoppingCart>(i => i.UserId);
 
-            builder.Entity<OrderItem>()
+            builder.Entity<OrderProduct>()
                .HasOne<Product>(p => p.Product)
-               .WithMany(o => o.OrderItems)
-               .HasForeignKey(p => p.ProductId);
+               .WithMany(o => o.OrderProducts)
+               .HasForeignKey(p => new { p.ProductId, p.ProductVariationId });
 
-            builder.Entity<OrderItem>()
+            builder.Entity<OrderProduct>()
                 .HasOne<Order>(o => o.Order)
-                .WithMany(o => o.Items)
+                .WithMany(o => o.Products)
                 .HasForeignKey(o => o.OrderId);
 
-            builder.Entity<OrderItem>()
+            builder.Entity<OrderProduct>()
                .HasOne<Option>(o => o.Option)
                .WithMany(oi => oi.OrderItems)
                .HasForeignKey(o => o.OptionId);
@@ -118,8 +120,7 @@ namespace ECommerceData
             builder.Entity<Order>()
                 .HasOne<PaymentMethod>(p => p.PaymentMethod)
                 .WithMany(o => o.Orders)
-                .HasForeignKey(p => p.PaymentMethodId);
-           
+                .HasForeignKey(p => p.PaymentMethodId);           
         }
     }
 }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ECommerceData.Migrations
 {
-    public partial class dataseed : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -66,7 +66,7 @@ namespace ECommerceData.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "OptionGroups",
+                name: "Options",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
@@ -75,7 +75,7 @@ namespace ECommerceData.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OptionGroups", x => x.Id);
+                    table.PrimaryKey("PK_Options", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -150,43 +150,24 @@ namespace ECommerceData.Migrations
                 name: "Products",
                 columns: table => new
                 {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Id = table.Column<int>(nullable: false),
+                    VariationId = table.Column<int>(nullable: false),
                     Name = table.Column<string>(nullable: true),
-                    Price = table.Column<float>(nullable: false),
+                    Price = table.Column<double>(nullable: false),
                     Description = table.Column<string>(nullable: true),
                     SKU = table.Column<string>(nullable: true),
                     ImageUrl = table.Column<string>(nullable: true),
                     AddedAt = table.Column<DateTime>(nullable: false),
+                    ModifedAt = table.Column<DateTime>(nullable: false),
                     CategoryId = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Products", x => x.Id);
+                    table.PrimaryKey("PK_Products", x => new { x.Id, x.VariationId });
                     table.ForeignKey(
                         name: "FK_Products_Categories_CategoryId",
                         column: x => x.CategoryId,
                         principalTable: "Categories",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Options",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(nullable: true),
-                    OptionGroupId = table.Column<int>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Options", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Options_OptionGroups_OptionGroupId",
-                        column: x => x.OptionGroupId,
-                        principalTable: "OptionGroups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -282,7 +263,7 @@ namespace ECommerceData.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    TotalPrice = table.Column<float>(nullable: false),
+                    TotalPrice = table.Column<double>(nullable: false),
                     UserId = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
@@ -346,27 +327,28 @@ namespace ECommerceData.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductOption",
+                name: "ProductOptions",
                 columns: table => new
                 {
                     ProductId = table.Column<int>(nullable: false),
+                    ProductVariationId = table.Column<int>(nullable: false),
                     OptionId = table.Column<int>(nullable: false),
                     ProductStock = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductOption", x => new { x.OptionId, x.ProductId });
+                    table.PrimaryKey("PK_ProductOptions", x => new { x.OptionId, x.ProductId, x.ProductVariationId });
                     table.ForeignKey(
-                        name: "FK_ProductOption_Options_OptionId",
+                        name: "FK_ProductOptions_Options_OptionId",
                         column: x => x.OptionId,
                         principalTable: "Options",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProductOption_Products_ProductId",
-                        column: x => x.ProductId,
+                        name: "FK_ProductOptions_Products_ProductId_ProductVariationId",
+                        columns: x => new { x.ProductId, x.ProductVariationId },
                         principalTable: "Products",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "Id", "VariationId" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -376,12 +358,13 @@ namespace ECommerceData.Migrations
                 {
                     CartId = table.Column<int>(nullable: false),
                     ProductId = table.Column<int>(nullable: false),
+                    ProductVariationId = table.Column<int>(nullable: false),
                     Quantity = table.Column<int>(nullable: false),
                     OptionId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CartProducts", x => new { x.CartId, x.ProductId });
+                    table.PrimaryKey("PK_CartProducts", x => new { x.CartId, x.ProductId, x.ProductVariationId });
                     table.ForeignKey(
                         name: "FK_CartProducts_Carts_CartId",
                         column: x => x.CartId,
@@ -395,70 +378,119 @@ namespace ECommerceData.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_CartProducts_Products_ProductId",
-                        column: x => x.ProductId,
+                        name: "FK_CartProducts_Products_ProductId_ProductVariationId",
+                        columns: x => new { x.ProductId, x.ProductVariationId },
                         principalTable: "Products",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "Id", "VariationId" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "OrderItems",
+                name: "OrderProducts",
                 columns: table => new
                 {
                     OrderId = table.Column<int>(nullable: false),
                     ProductId = table.Column<int>(nullable: false),
+                    ProductVariationId = table.Column<int>(nullable: false),
                     Quantity = table.Column<int>(nullable: false),
                     OptionId = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_OrderItems", x => new { x.OrderId, x.ProductId });
+                    table.PrimaryKey("PK_OrderProducts", x => new { x.OrderId, x.ProductId, x.ProductVariationId });
                     table.ForeignKey(
-                        name: "FK_OrderItems_Options_OptionId",
+                        name: "FK_OrderProducts_Options_OptionId",
                         column: x => x.OptionId,
                         principalTable: "Options",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderItems_Orders_OrderId",
+                        name: "FK_OrderProducts_Orders_OrderId",
                         column: x => x.OrderId,
                         principalTable: "Orders",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_OrderItems_Products_ProductId",
-                        column: x => x.ProductId,
+                        name: "FK_OrderProducts_Products_ProductId_ProductVariationId",
+                        columns: x => new { x.ProductId, x.ProductVariationId },
                         principalTable: "Products",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "Id", "VariationId" },
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.InsertData(
-                table: "OptionGroups",
+                table: "Categories",
                 columns: new[] { "Id", "Name" },
-                values: new object[] { 1, "size" });
+                values: new object[,]
+                {
+                    { 1, "T-shirt" },
+                    { 2, "Jumper" },
+                    { 3, "Longsleeve" }
+                });
 
             migrationBuilder.InsertData(
-                table: "OptionGroups",
-                columns: new[] { "Id", "Name" },
-                values: new object[] { 2, "color" });
+                table: "DeliveryMethods",
+                columns: new[] { "Id", "Name", "Price" },
+                values: new object[,]
+                {
+                    { 1, "DPD Courier", 14.99 },
+                    { 2, "DHL Courier", 12.99 }
+                });
 
             migrationBuilder.InsertData(
                 table: "Options",
-                columns: new[] { "Id", "Name", "OptionGroupId" },
+                columns: new[] { "Id", "Name" },
                 values: new object[,]
                 {
-                    { 1, "XS", 1 },
-                    { 2, "S", 1 },
-                    { 3, "M", 1 },
-                    { 4, "L", 1 },
-                    { 5, "XL", 1 },
-                    { 6, "XXL", 1 },
-                    { 7, "black", 2 },
-                    { 8, "white", 2 },
-                    { 9, "gray", 2 },
-                    { 10, "red", 2 }
+                    { 1, "XS" },
+                    { 2, "S" },
+                    { 3, "M" },
+                    { 4, "L" },
+                    { 5, "XL" },
+                    { 6, "XXL" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "PaymentMethods",
+                columns: new[] { "Id", "Name" },
+                values: new object[] { 1, "Cash on delivery" });
+
+            migrationBuilder.InsertData(
+                table: "Products",
+                columns: new[] { "Id", "VariationId", "AddedAt", "CategoryId", "Description", "ImageUrl", "ModifedAt", "Name", "Price", "SKU" },
+                values: new object[,]
+                {
+                    { 1, 1, new DateTime(2020, 11, 17, 17, 52, 15, 362, DateTimeKind.Local).AddTicks(1021), 1, "Plain black silk t-shirt", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Black t-shirt", 24.989999999999998, "BL-T-1" },
+                    { 2, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4254), 1, "Plain white silk t-shirt", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "White t-shirt", 24.989999999999998, "WT-T-2" },
+                    { 3, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4297), 2, "Jumper with logo", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Bogo Jumper", 69.989999999999995, "BG-JMP-3" },
+                    { 4, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4305), 2, "Comfortable oversize hoodie", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Oversize hoodie", 79.989999999999995, "OS-H-4" },
+                    { 5, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4308), 3, "Longsleeve with white stripes", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Grey Stripped Longsleeve", 49.990000000000002, "GRST-LS-2" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "ProductOptions",
+                columns: new[] { "OptionId", "ProductId", "ProductVariationId", "ProductStock" },
+                values: new object[,]
+                {
+                    { 1, 1, 1, 5 },
+                    { 5, 4, 1, 5 },
+                    { 4, 4, 1, 5 },
+                    { 5, 3, 1, 5 },
+                    { 4, 3, 1, 5 },
+                    { 3, 3, 1, 5 },
+                    { 2, 3, 1, 5 },
+                    { 1, 3, 1, 5 },
+                    { 4, 5, 1, 5 },
+                    { 5, 2, 1, 5 },
+                    { 3, 2, 1, 5 },
+                    { 2, 2, 1, 5 },
+                    { 1, 2, 1, 5 },
+                    { 5, 1, 1, 5 },
+                    { 4, 1, 1, 5 },
+                    { 3, 1, 1, 5 },
+                    { 2, 1, 1, 5 },
+                    { 4, 2, 1, 5 },
+                    { 5, 5, 1, 5 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -511,9 +543,9 @@ namespace ECommerceData.Migrations
                 column: "OptionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CartProducts_ProductId",
+                name: "IX_CartProducts_ProductId_ProductVariationId",
                 table: "CartProducts",
-                column: "ProductId");
+                columns: new[] { "ProductId", "ProductVariationId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Carts_UserId",
@@ -523,19 +555,14 @@ namespace ECommerceData.Migrations
                 filter: "[UserId] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Options_OptionGroupId",
-                table: "Options",
-                column: "OptionGroupId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_OptionId",
-                table: "OrderItems",
+                name: "IX_OrderProducts_OptionId",
+                table: "OrderProducts",
                 column: "OptionId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_OrderItems_ProductId",
-                table: "OrderItems",
-                column: "ProductId");
+                name: "IX_OrderProducts_ProductId_ProductVariationId",
+                table: "OrderProducts",
+                columns: new[] { "ProductId", "ProductVariationId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Orders_AddressId",
@@ -558,9 +585,9 @@ namespace ECommerceData.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductOption_ProductId",
-                table: "ProductOption",
-                column: "ProductId");
+                name: "IX_ProductOptions_ProductId_ProductVariationId",
+                table: "ProductOptions",
+                columns: new[] { "ProductId", "ProductVariationId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
@@ -589,10 +616,10 @@ namespace ECommerceData.Migrations
                 name: "CartProducts");
 
             migrationBuilder.DropTable(
-                name: "OrderItems");
+                name: "OrderProducts");
 
             migrationBuilder.DropTable(
-                name: "ProductOption");
+                name: "ProductOptions");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
@@ -617,9 +644,6 @@ namespace ECommerceData.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.DropTable(
-                name: "OptionGroups");
 
             migrationBuilder.DropTable(
                 name: "Categories");

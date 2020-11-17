@@ -81,6 +81,27 @@ namespace ECommerceServices
             var product = mapper.Map<Product>(createProductModel);
             product.AddedAt = DateTime.Now;
 
+            if(product.Id == 0)
+            {
+                product.Id = 1 + await appDb.Products.OrderByDescending(p => p.Id).Select(p => p.Id).FirstOrDefaultAsync();
+            }
+
+
+            int? variationId = null;
+
+            if (createProductModel.ProductId != null)
+            {
+                variationId = await appDb.Products.Where(p => p.Id == product.Id).OrderByDescending(p => p.VariationId).Select(p => p.VariationId).FirstOrDefaultAsync();
+            }
+
+            if (variationId == null) {
+                product.VariationId = 1;
+            } else
+            {
+                product.VariationId = (int)variationId + 1;
+            }
+
+
             await appDb.Products.AddAsync(product);
             await appDb.SaveChangesAsync();
 
@@ -89,17 +110,17 @@ namespace ECommerceServices
             logger.LogInformation($"Finished method {nameof(createProductAsync)}.");
         }
 
-        public async Task deleteProductAsync(int productId)
+        public async Task deleteProductAsync(DeleteProductModel deleteProductModel)
         {
             logger.LogInformation($"Starting method {nameof(deleteProductAsync)}.");
 
-            var product = await appDb.Products.FindAsync(productId);
+            var product = await appDb.Products.FindAsync(deleteProductModel.ProductId, deleteProductModel.ProductVariationId);
 
             if (product == null)
             {
                 var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
                 {
-                    Content = new StringContent($"The product with given id {nameof(productId)} cannot be removed beacause it doesn't exist in database, please check if the given id is correct")
+                    Content = new StringContent($"The product with given id {nameof(deleteProductModel.ProductId)} and variationId {nameof(deleteProductModel.ProductVariationId)} cannot be removed beacause it doesn't exist in database, please check if the given id is correct")
                 };
                 throw new HttpResponseException(message);
             }
@@ -195,7 +216,7 @@ namespace ECommerceServices
             return product;
         }
 
-        public async Task<List<Product>> filterProductsAsync(string productName, string categoryName, string sortType, string orderType, Size? size, Color? color, float? priceFrom, float? priceTo)
+        public async Task<List<Product>> filterProductsAsync(string productName, string categoryName, string sortType, string orderType, Size? size,float? priceFrom, float? priceTo)
         {
             IQueryable<Product> query = appDb.Products
                                            .Include(p => p.Category)
@@ -219,14 +240,7 @@ namespace ECommerceServices
                         p.ProductOptions.Intersect(p.ProductOptions.Where(o => o.Option.Name == size.ToString()))
                         .Any());
             }
-
-            if (color != null)
-            {
-                query = query.Where(p =>
-                        p.ProductOptions.Intersect(p.ProductOptions.Where(o => o.Option.Name == color.ToString()))
-                        .Any());
-            }
-
+           
             query = query.Where(p =>
                     p.Price >= priceFrom && p.Price <= priceTo);
 
@@ -303,6 +317,55 @@ namespace ECommerceServices
             logger.LogInformation($"Finished method {nameof(addCategoryAsync)}.");
         }
 
+        public async Task deleteCategoryAsync(CategoryDTO categoryModel)
+        {
+            logger.LogInformation($"Starting method {nameof(deleteCategoryAsync)}.");
+
+            if (categoryModel == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(categoryModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if (categoryModel.Id == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(categoryModel)} is missing some required values")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var category = await appDb.Categories.FindAsync(categoryModel.Id);
+
+            if (category == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"Category with give id {nameof(categoryModel.Id)} was not found in database")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            try
+            {
+                appDb.Categories.Remove(category);
+                await appDb.SaveChangesAsync();
+            } catch (Exception ex)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"Couldn't delete category because there are products with category id as this category id")
+                };
+                throw new HttpResponseException(message);
+            }
+          
+            logger.LogInformation($"Finished method {nameof(deleteCategoryAsync)}.");
+        }
+
         public async Task addCategoryToProduct(int productId, int categoryId)
         {
             var product = await appDb.Products.FindAsync(productId);
@@ -350,7 +413,57 @@ namespace ECommerceServices
 
             logger.LogInformation($"Finished method {nameof(addOptionAsync)}.");
         }
-      
+
+        public async Task deleteOptionAsync(OptionDTO optionModel)
+        {
+            logger.LogInformation($"Starting method {nameof(deleteOptionAsync)}.");
+
+            if (optionModel == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(optionModel)} cannot be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if (optionModel.Id == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"{nameof(optionModel)} is missing some required values")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var option = await appDb.Options.FindAsync(optionModel.Id);
+
+            if (option == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The option with given id {nameof(optionModel.Id)} doesn't exist in database")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            try
+            {
+                appDb.Options.Remove(option);
+                await appDb.SaveChangesAsync();               
+            }
+            catch (Exception ex)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The option with given id {nameof(optionModel.Id)} cannot be deleted because some products have this option")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            logger.LogInformation($"Finished method {nameof(deleteOptionAsync)}.");
+        }
+
         public async Task addOptionToProduct(int productId, int optionId)
         {
             ProductOption productOption = new ProductOption()
@@ -359,60 +472,19 @@ namespace ECommerceServices
                 OptionId = optionId
             };
 
-            await appDb.ProductOption.AddAsync(productOption);
+            await appDb.ProductOptions.AddAsync(productOption);
             await appDb.SaveChangesAsync();
         }
 
         public async Task addStockToProductOption(AddStockModel addStockModel)
         {
-            var productOption = await appDb.ProductOption.FindAsync(addStockModel.OptionId, addStockModel.ProductId);
+            var productOption = await appDb.ProductOptions.FindAsync(addStockModel.OptionId, addStockModel.ProductId);
 
             productOption.ProductStock = addStockModel.Stock;
 
             await appDb.SaveChangesAsync();
         }
 
-        public async Task addOptionGroupAsync(OptionGroupDTO optionGroupModel)
-        {
-            logger.LogInformation($"Starting method {nameof(addOptionGroupAsync)}.");
-
-            if (optionGroupModel == null)
-            {
-                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
-                {
-                    Content = new StringContent($"{nameof(optionGroupModel)} cannot be null")
-                };
-                throw new HttpResponseException(message);
-            }
-
-            if (optionGroupModel.Name == null)
-            {
-                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
-                {
-                    Content = new StringContent($"{nameof(optionGroupModel)} is missing some required values")
-                };
-                throw new HttpResponseException(message);
-            }
-
-            var optionGroupExists = await appDb.OptionGroups.Where(x => x.Name == optionGroupModel.Name).AnyAsync();
-
-            if (optionGroupExists)
-            {
-                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
-                {
-                    Content = new StringContent($"There already is an element inside the database as the one to be added {nameof(optionGroupModel.Name)} is not unique")
-                };
-                throw new HttpResponseException(message);
-            }
-
-            var optionGroup = mapper.Map<OptionGroup>(optionGroupModel);
-
-            await appDb.OptionGroups.AddAsync(optionGroup);
-            await appDb.SaveChangesAsync();
-
-            logger.LogInformation($"Finished method {nameof(addOptionGroupAsync)}.");
-        }
-
-
+        
     }
 }

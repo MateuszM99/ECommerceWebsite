@@ -130,17 +130,20 @@ namespace ECommerceData.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProductVariationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("OptionId")
                         .HasColumnType("int");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("CartId", "ProductId");
+                    b.HasKey("CartId", "ProductId", "ProductVariationId");
 
                     b.HasIndex("OptionId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId", "ProductVariationId");
 
                     b.ToTable("CartProducts");
                 });
@@ -198,8 +201,14 @@ namespace ECommerceData.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "Courier",
+                            Name = "DPD Courier",
                             Price = 14.99
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Name = "DHL Courier",
+                            Price = 12.99
                         });
                 });
 
@@ -213,12 +222,7 @@ namespace ECommerceData.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("OptionGroupId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
-
-                    b.HasIndex("OptionGroupId");
 
                     b.ToTable("Options");
 
@@ -226,89 +230,32 @@ namespace ECommerceData.Migrations
                         new
                         {
                             Id = 1,
-                            Name = "XS",
-                            OptionGroupId = 1
+                            Name = "XS"
                         },
                         new
                         {
                             Id = 2,
-                            Name = "S",
-                            OptionGroupId = 1
+                            Name = "S"
                         },
                         new
                         {
                             Id = 3,
-                            Name = "M",
-                            OptionGroupId = 1
+                            Name = "M"
                         },
                         new
                         {
                             Id = 4,
-                            Name = "L",
-                            OptionGroupId = 1
+                            Name = "L"
                         },
                         new
                         {
                             Id = 5,
-                            Name = "XL",
-                            OptionGroupId = 1
+                            Name = "XL"
                         },
                         new
                         {
                             Id = 6,
-                            Name = "XXL",
-                            OptionGroupId = 1
-                        },
-                        new
-                        {
-                            Id = 7,
-                            Name = "black",
-                            OptionGroupId = 2
-                        },
-                        new
-                        {
-                            Id = 8,
-                            Name = "white",
-                            OptionGroupId = 2
-                        },
-                        new
-                        {
-                            Id = 9,
-                            Name = "gray",
-                            OptionGroupId = 2
-                        },
-                        new
-                        {
-                            Id = 10,
-                            Name = "red",
-                            OptionGroupId = 2
-                        });
-                });
-
-            modelBuilder.Entity("ECommerceModels.Models.OptionGroup", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OptionGroups");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Name = "size"
-                        },
-                        new
-                        {
-                            Id = 2,
-                            Name = "color"
+                            Name = "XXL"
                         });
                 });
 
@@ -371,12 +318,15 @@ namespace ECommerceData.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("ECommerceModels.Models.OrderItem", b =>
+            modelBuilder.Entity("ECommerceModels.Models.OrderProduct", b =>
                 {
                     b.Property<int>("OrderId")
                         .HasColumnType("int");
 
                     b.Property<int>("ProductId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ProductVariationId")
                         .HasColumnType("int");
 
                     b.Property<int>("OptionId")
@@ -385,13 +335,13 @@ namespace ECommerceData.Migrations
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
-                    b.HasKey("OrderId", "ProductId");
+                    b.HasKey("OrderId", "ProductId", "ProductVariationId");
 
                     b.HasIndex("OptionId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId", "ProductVariationId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderProducts");
                 });
 
             modelBuilder.Entity("ECommerceModels.Models.PaymentMethod", b =>
@@ -419,9 +369,10 @@ namespace ECommerceData.Migrations
             modelBuilder.Entity("ECommerceModels.Models.Product", b =>
                 {
                     b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+                        .HasColumnType("int");
+
+                    b.Property<int>("VariationId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("AddedAt")
                         .HasColumnType("datetime2");
@@ -435,6 +386,9 @@ namespace ECommerceData.Migrations
                     b.Property<string>("ImageUrl")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<DateTime>("ModifedAt")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
@@ -444,7 +398,7 @@ namespace ECommerceData.Migrations
                     b.Property<string>("SKU")
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id", "VariationId");
 
                     b.HasIndex("CategoryId");
 
@@ -454,9 +408,11 @@ namespace ECommerceData.Migrations
                         new
                         {
                             Id = 1,
-                            AddedAt = new DateTime(2020, 11, 15, 23, 0, 20, 732, DateTimeKind.Local).AddTicks(7479),
+                            VariationId = 1,
+                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 362, DateTimeKind.Local).AddTicks(1021),
                             CategoryId = 1,
                             Description = "Plain black silk t-shirt",
+                            ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Black t-shirt",
                             Price = 24.989999999999998,
                             SKU = "BL-T-1"
@@ -464,9 +420,11 @@ namespace ECommerceData.Migrations
                         new
                         {
                             Id = 2,
-                            AddedAt = new DateTime(2020, 11, 15, 23, 0, 20, 735, DateTimeKind.Local).AddTicks(107),
+                            VariationId = 1,
+                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4254),
                             CategoryId = 1,
                             Description = "Plain white silk t-shirt",
+                            ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "White t-shirt",
                             Price = 24.989999999999998,
                             SKU = "WT-T-2"
@@ -474,9 +432,11 @@ namespace ECommerceData.Migrations
                         new
                         {
                             Id = 3,
-                            AddedAt = new DateTime(2020, 11, 15, 23, 0, 20, 735, DateTimeKind.Local).AddTicks(149),
+                            VariationId = 1,
+                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4297),
                             CategoryId = 2,
                             Description = "Jumper with logo",
+                            ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Bogo Jumper",
                             Price = 69.989999999999995,
                             SKU = "BG-JMP-3"
@@ -484,9 +444,11 @@ namespace ECommerceData.Migrations
                         new
                         {
                             Id = 4,
-                            AddedAt = new DateTime(2020, 11, 15, 23, 0, 20, 735, DateTimeKind.Local).AddTicks(154),
+                            VariationId = 1,
+                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4305),
                             CategoryId = 2,
                             Description = "Comfortable oversize hoodie",
+                            ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Oversize hoodie",
                             Price = 79.989999999999995,
                             SKU = "OS-H-4"
@@ -494,9 +456,11 @@ namespace ECommerceData.Migrations
                         new
                         {
                             Id = 5,
-                            AddedAt = new DateTime(2020, 11, 15, 23, 0, 20, 735, DateTimeKind.Local).AddTicks(158),
+                            VariationId = 1,
+                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4308),
                             CategoryId = 3,
                             Description = "Longsleeve with white stripes",
+                            ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             Name = "Grey Stripped Longsleeve",
                             Price = 49.990000000000002,
                             SKU = "GRST-LS-2"
@@ -511,128 +475,150 @@ namespace ECommerceData.Migrations
                     b.Property<int>("ProductId")
                         .HasColumnType("int");
 
+                    b.Property<int>("ProductVariationId")
+                        .HasColumnType("int");
+
                     b.Property<int>("ProductStock")
                         .HasColumnType("int");
 
-                    b.HasKey("OptionId", "ProductId");
+                    b.HasKey("OptionId", "ProductId", "ProductVariationId");
 
-                    b.HasIndex("ProductId");
+                    b.HasIndex("ProductId", "ProductVariationId");
 
-                    b.ToTable("ProductOption");
+                    b.ToTable("ProductOptions");
 
                     b.HasData(
                         new
                         {
                             OptionId = 1,
                             ProductId = 1,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 2,
                             ProductId = 1,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 3,
                             ProductId = 1,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 4,
                             ProductId = 1,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 5,
                             ProductId = 1,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 1,
                             ProductId = 2,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 2,
                             ProductId = 2,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 3,
                             ProductId = 2,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 4,
                             ProductId = 2,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 5,
                             ProductId = 2,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 1,
                             ProductId = 3,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 2,
                             ProductId = 3,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 3,
                             ProductId = 3,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 4,
                             ProductId = 3,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 5,
                             ProductId = 3,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 4,
                             ProductId = 4,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 5,
                             ProductId = 4,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 4,
                             ProductId = 5,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         },
                         new
                         {
                             OptionId = 5,
                             ProductId = 5,
+                            ProductVariationId = 1,
                             ProductStock = 5
                         });
                 });
@@ -813,16 +799,9 @@ namespace ECommerceData.Migrations
 
                     b.HasOne("ECommerceModels.Models.Product", "Product")
                         .WithMany("CartProducts")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("ProductId", "ProductVariationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("ECommerceModels.Models.Option", b =>
-                {
-                    b.HasOne("ECommerceModels.Models.OptionGroup", "OptionGroup")
-                        .WithMany("Options")
-                        .HasForeignKey("OptionGroupId");
                 });
 
             modelBuilder.Entity("ECommerceModels.Models.Order", b =>
@@ -850,7 +829,7 @@ namespace ECommerceData.Migrations
                         .HasForeignKey("UserId");
                 });
 
-            modelBuilder.Entity("ECommerceModels.Models.OrderItem", b =>
+            modelBuilder.Entity("ECommerceModels.Models.OrderProduct", b =>
                 {
                     b.HasOne("ECommerceModels.Models.Option", "Option")
                         .WithMany("OrderItems")
@@ -859,14 +838,14 @@ namespace ECommerceData.Migrations
                         .IsRequired();
 
                     b.HasOne("ECommerceModels.Models.Order", "Order")
-                        .WithMany("Items")
+                        .WithMany("Products")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ECommerceModels.Models.Product", "Product")
-                        .WithMany("OrderItems")
-                        .HasForeignKey("ProductId")
+                        .WithMany("OrderProducts")
+                        .HasForeignKey("ProductId", "ProductVariationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -888,7 +867,7 @@ namespace ECommerceData.Migrations
 
                     b.HasOne("ECommerceModels.Models.Product", "Product")
                         .WithMany("ProductOptions")
-                        .HasForeignKey("ProductId")
+                        .HasForeignKey("ProductId", "ProductVariationId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

@@ -18,6 +18,7 @@ namespace ECommerceWebApi.Maps.RequestModelsMaps
             this.provider.NumberDecimalSeparator = ",";
 
             CreateMap<CreateProductModel, Product>()
+                .ForMember(dest => dest.Id,opt => opt.MapFrom(src => src.ProductId))
                 .ForMember(dest => dest.Price, opt => opt.MapFrom(src => Convert.ToDouble(src.Price, this.provider)));              
                 
                 

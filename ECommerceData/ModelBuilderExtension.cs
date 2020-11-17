@@ -14,84 +14,39 @@ namespace ECommerceData
     {        
         public static void SeedData(this ModelBuilder modelBuilder)
         {
-
-
-            modelBuilder.Entity<OptionGroup>()
-                .HasData(
-                    new OptionGroup
-                    {
-                        Id = 1,
-                        Name = "size"
-                    },
-                    new OptionGroup
-                    {
-                        Id = 2,
-                        Name = "color"
-                    }
-                );
-
+         
             modelBuilder.Entity<Option>()
                 .HasData(
                     new Option
                     {
                         Id = 1,
-                        Name = Size.XS.ToString(),
-                        OptionGroupId = 1
+                        Name = Size.XS.ToString(),                       
                     },
                     new Option
                     {
                         Id = 2,
-                        Name = Size.S.ToString(),
-                        OptionGroupId = 1
+                        Name = Size.S.ToString(),                      
                     },
                     new Option
                     {
                         Id = 3,
-                        Name = Size.M.ToString(),
-                        OptionGroupId = 1
+                        Name = Size.M.ToString(),                        
                     },
                     new Option
                     {
                         Id = 4,
-                        Name = Size.L.ToString(),
-                        OptionGroupId = 1
+                        Name = Size.L.ToString(),                        
                     },
                      new Option
                      {
                          Id = 5,
-                         Name = Size.XL.ToString(),
-                         OptionGroupId = 1
+                         Name = Size.XL.ToString(),                      
                      },
                     new Option
                     {
                         Id = 6,
-                        Name = Size.XXL.ToString(),
-                        OptionGroupId = 1
-                    },
-                    new Option
-                    {
-                        Id = 7,
-                        Name = Color.black.ToString(),
-                        OptionGroupId = 2
-                    },
-                    new Option
-                    {
-                        Id = 8,
-                        Name = Color.white.ToString(),
-                        OptionGroupId = 2
-                    },
-                    new Option
-                    {
-                        Id = 9,
-                        Name = Color.gray.ToString(),
-                        OptionGroupId = 2
-                    },
-                    new Option
-                    {
-                        Id = 10,
-                        Name = Color.red.ToString(),
-                        OptionGroupId = 2
-                    }
+                        Name = Size.XXL.ToString(),                        
+                    }                 
                 );
 
             modelBuilder.Entity<Category>()
@@ -118,6 +73,7 @@ namespace ECommerceData
                     new Product
                     {
                         Id = 1,
+                        VariationId = 1,
                         Name = "Black t-shirt",
                         SKU = "BL-T-1",
                         Price = 24.99,
@@ -128,6 +84,7 @@ namespace ECommerceData
                     new Product
                     {
                         Id = 2,
+                        VariationId = 1,
                         Name = "White t-shirt",
                         SKU = "WT-T-2",
                         Price = 24.99,
@@ -138,6 +95,7 @@ namespace ECommerceData
                     new Product
                     {
                         Id = 3,
+                        VariationId = 1,
                         Name = "Bogo Jumper",
                         SKU = "BG-JMP-3",
                         Price = 69.99,
@@ -148,6 +106,7 @@ namespace ECommerceData
                     new Product
                     {
                         Id = 4,
+                        VariationId = 1,
                         Name = "Oversize hoodie",
                         SKU = "OS-H-4",
                         Price = 79.99,
@@ -158,6 +117,7 @@ namespace ECommerceData
                      new Product
                      {
                          Id = 5,
+                         VariationId = 1,
                          Name = "Grey Stripped Longsleeve",
                          SKU = "GRST-LS-2",
                          Price = 49.99,
@@ -172,114 +132,133 @@ namespace ECommerceData
                 new ProductOption
                 {
                     ProductId = 1,
+                    ProductVariationId = 1,
                     OptionId = 1,
                     ProductStock = 5
                 }, 
                 new ProductOption
                 {
                     ProductId = 1,
+                    ProductVariationId = 1,
                     OptionId = 2,
                     ProductStock = 5
                 }, 
                 new ProductOption
                 {
                     ProductId = 1,
+                    ProductVariationId = 1,
                     OptionId = 3,
                     ProductStock = 5
                 }, 
                 new ProductOption
                 {
                     ProductId = 1,
+                    ProductVariationId = 1,
                     OptionId = 4,
                     ProductStock = 5
                 }, 
                 new ProductOption
                 {
                     ProductId = 1,
+                    ProductVariationId = 1,
                     OptionId = 5,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 2,
+                    ProductVariationId = 1,
                     OptionId = 1,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 2,
+                    ProductVariationId = 1,
                     OptionId = 2,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 2,
+                    ProductVariationId = 1,
                     OptionId = 3,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 2,
+                    ProductVariationId = 1,
                     OptionId = 4,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 2,
+                    ProductVariationId = 1,
                     OptionId = 5,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 3,
+                    ProductVariationId = 1,
                     OptionId = 1,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 3,
+                    ProductVariationId = 1,
                     OptionId = 2,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 3,
+                    ProductVariationId = 1,
                     OptionId = 3,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 3,
+                    ProductVariationId = 1,
                     OptionId = 4,
                     ProductStock = 5
                 },
                 new ProductOption
                 {
                     ProductId = 3,
+                    ProductVariationId = 1,
                     OptionId = 5,
                     ProductStock = 5
                 },
                  new ProductOption
                  {
                      ProductId = 4,
+                     ProductVariationId = 1,
                      OptionId = 4,
                      ProductStock = 5
                  },
                 new ProductOption
                 {
                     ProductId = 4,
+                    ProductVariationId = 1,
                     OptionId = 5,
                     ProductStock = 5
                 },
                  new ProductOption
                  {
                      ProductId = 5,
+                     ProductVariationId = 1,
                      OptionId = 4,
                      ProductStock = 5
                  },
                 new ProductOption
                 {
                     ProductId = 5,
+                    ProductVariationId = 1,
                     OptionId = 5,
                     ProductStock = 5
                 }

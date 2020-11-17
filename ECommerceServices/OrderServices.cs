@@ -109,26 +109,27 @@ namespace ECommerceServices
                 throw new HttpResponseException(message);
             }
 
-            List<OrderItem> orderItems = new List<OrderItem>();
+            List<OrderProduct> orderItems = new List<OrderProduct>();
 
             foreach (var cartItem in cartItems)
             {
-                OrderItem orderItem = new OrderItem
+                OrderProduct orderItem = new OrderProduct
                 {
                     OrderId = order.Id,
                     ProductId = cartItem.ProductId,
+                    ProductVariationId = cartItem.ProductVariationId,
                     Quantity = cartItem.Quantity,
                     Option = cartItem.Option
                 };
 
                 // remove the amount of ordered products from product stock
-                var productOption = await appDb.ProductOption.FindAsync(cartItem.ProductId, cartItem.OptionId);
+                var productOption = await appDb.ProductOptions.FindAsync(cartItem.OptionId, cartItem.ProductId, cartItem.ProductVariationId);
                 productOption.ProductStock -= cartItem.Quantity;
                
                 orderItems.Add(orderItem);
             }
 
-            await appDb.OrderItems.AddRangeAsync(orderItems);
+            await appDb.OrderProducts.AddRangeAsync(orderItems);
             appDb.Carts.Remove(cart);
             await appDb.SaveChangesAsync();          
         }
@@ -207,26 +208,27 @@ namespace ECommerceServices
             await appDb.Orders.AddAsync(order);
             await appDb.SaveChangesAsync();
 
-            List<OrderItem> orderItems = new List<OrderItem>();
+            List<OrderProduct> orderItems = new List<OrderProduct>();
 
             foreach (var cartItem in cartItems)
             {
-                OrderItem orderItem = new OrderItem
+                OrderProduct orderItem = new OrderProduct
                 {
                     OrderId = order.Id,
                     ProductId = cartItem.ProductId,
+                    ProductVariationId = cartItem.ProductVariationId,
                     Quantity = cartItem.Quantity,
                     Option = cartItem.Option
                 };
 
                 // remove the amount of ordered products from product stock
-                var productOption = await appDb.ProductOption.FindAsync(cartItem.OptionId,cartItem.ProductId);
-                productOption.ProductStock -= 1;
+                var productOption = await appDb.ProductOptions.FindAsync(cartItem.OptionId,cartItem.ProductId,cartItem.ProductVariationId);
+                productOption.ProductStock -= cartItem.Quantity;
 
                 orderItems.Add(orderItem);               
             }          
 
-            await appDb.OrderItems.AddRangeAsync(orderItems);
+            await appDb.OrderProducts.AddRangeAsync(orderItems);
             appDb.CartProducts.RemoveRange(cartItems);
             appDb.Carts.Remove(cart);
             await appDb.SaveChangesAsync();           
@@ -245,10 +247,10 @@ namespace ECommerceServices
                 throw new HttpResponseException(message);
             }
 
-            foreach (var orderItem in order.Items)
+            foreach (var orderItem in order.Products)
             {
                 // add the amount of ordered products to product stock
-                var product = await appDb.ProductOption.FindAsync(orderItem.ProductId, orderItem.OptionId);
+                var product = await appDb.ProductOptions.FindAsync(orderItem.OptionId, orderItem.ProductId,orderItem.ProductVariationId);
                 product.ProductStock += orderItem.Quantity;
             }
 
@@ -260,6 +262,19 @@ namespace ECommerceServices
         public Task EditOrder()
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<List<Order>> getAllOrdersAsync()
+        {
+            logger.LogInformation($"Starting method {nameof(getAllOrdersAsync)}.");
+           
+            var orders = await appDb.Orders
+                                .Include(o => o.Products)
+                                .ToListAsync();
+
+            logger.LogInformation($"Finished method {nameof(getAllOrdersAsync)}.");
+
+            return orders;
         }
 
         public async Task<List<Order>> getAllUsersOrdersAsync(ApplicationUser user)
@@ -276,7 +291,7 @@ namespace ECommerceServices
             }
 
             var orders = await appDb.Orders.Where(o => o.UserId == user.Id)
-                .Include(o => o.Items)
+                .Include(o => o.Products)
                 .ToListAsync();
 
             logger.LogInformation($"Finished method {nameof(getAllUsersOrdersAsync)}.");

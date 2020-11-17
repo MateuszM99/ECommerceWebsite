@@ -7,6 +7,7 @@ using ECommerceData;
 using ECommerceIServices;
 using ECommerceModels.Authentication;
 using ECommerceModels.Models;
+using ECommerceModels.RequestModels.CartRequestModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
@@ -33,9 +34,9 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpPost]
         [Route("addCart")]
-        public async Task<IActionResult> AddToCart(int? cartId,int productId,int? quantity,string optionName)
+        public async Task<IActionResult> AddToCart([FromBody]AddToCartModel addToCartModel)
         {                               
-            var cartResponse = await cartServices.addToCartAsync(cartId, productId,quantity,optionName);
+            var cartResponse = await cartServices.addToCartAsync(addToCartModel);
 
             // If function has any errors
             if (cartResponse.Status == "Error")
@@ -48,11 +49,11 @@ namespace ECommerceWebApi.Controllers
 
         [EnableCors("Policy")]
         [HttpPost]
-        [Route("removeCart")]
-        public async Task<IActionResult> RemoveFromCart(int cartId,int productId)
+        [Route("removeFromCart")]
+        public async Task<IActionResult> RemoveFromCart([FromBody]RemoveFromCartModel removeFromCartModel)
         {
              
-             var cartResponse = await cartServices.removeFromCartAsync(cartId, productId);
+             var cartResponse = await cartServices.removeFromCartAsync(removeFromCartModel);
 
             if (cartResponse.Status == "Error")
                 return StatusCode(StatusCodes.Status400BadRequest, cartResponse.Message);
@@ -65,7 +66,7 @@ namespace ECommerceWebApi.Controllers
         [EnableCors("Policy")]
         [HttpGet]
         [Route("getCart")]
-        public async Task<IActionResult> getCartProducts(int cartId)
+        public async Task<IActionResult> GetCart(int cartId)
         {
             var cartProducts = await cartServices.getCartProductsAsync(cartId);
             var cartPrice = await cartServices.getCartPriceAsync(cartId);

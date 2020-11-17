@@ -7,7 +7,8 @@ using System.Text;
 namespace ECommerceModels.RequestModels.ProductRequestModels
 {
     public class CreateProductModel
-    {       
+    { 
+        public int? ProductId { get; set; }
         public String Name { get; set; }
         public string Price { get; set; }
         public string Description { get; set; }

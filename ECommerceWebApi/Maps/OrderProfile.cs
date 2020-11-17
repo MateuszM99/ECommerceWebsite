@@ -18,7 +18,7 @@ namespace ECommerceWebApi.Maps
                 .ForMember(dest => dest.ClientEmail, opt => opt.MapFrom(src => src.User.Email))
                 .ForMember(dest => dest.ClientPhone, opt => opt.MapFrom(src => src.User.PhoneNumber))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
-                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Items.Select(p => p.Product).ToList()));
+                .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products.Select(p => p.Product).ToList()));
 
 
             CreateMap<OrderDTO, Order>()
