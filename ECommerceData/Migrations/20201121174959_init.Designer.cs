@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ECommerceData.Migrations
 {
     [DbContext(typeof(ECommerceContext))]
-    [Migration("20201117165215_init")]
+    [Migration("20201121174959_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -411,7 +411,7 @@ namespace ECommerceData.Migrations
                         {
                             Id = 1,
                             VariationId = 1,
-                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 362, DateTimeKind.Local).AddTicks(1021),
+                            AddedAt = new DateTime(2020, 11, 21, 18, 49, 59, 281, DateTimeKind.Local).AddTicks(2409),
                             CategoryId = 1,
                             Description = "Plain black silk t-shirt",
                             ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -423,7 +423,7 @@ namespace ECommerceData.Migrations
                         {
                             Id = 2,
                             VariationId = 1,
-                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4254),
+                            AddedAt = new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5129),
                             CategoryId = 1,
                             Description = "Plain white silk t-shirt",
                             ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -435,7 +435,7 @@ namespace ECommerceData.Migrations
                         {
                             Id = 3,
                             VariationId = 1,
-                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4297),
+                            AddedAt = new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5198),
                             CategoryId = 2,
                             Description = "Jumper with logo",
                             ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -447,7 +447,7 @@ namespace ECommerceData.Migrations
                         {
                             Id = 4,
                             VariationId = 1,
-                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4305),
+                            AddedAt = new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5205),
                             CategoryId = 2,
                             Description = "Comfortable oversize hoodie",
                             ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
@@ -459,7 +459,7 @@ namespace ECommerceData.Migrations
                         {
                             Id = 5,
                             VariationId = 1,
-                            AddedAt = new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4308),
+                            AddedAt = new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5209),
                             CategoryId = 3,
                             Description = "Longsleeve with white stripes",
                             ModifedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),

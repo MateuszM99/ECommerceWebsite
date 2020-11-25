@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace ECommerceData
 {
@@ -292,28 +293,29 @@ namespace ECommerceData
 
         }
         
-        public static void SeedUsersData(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
+        public async static Task SeedUsersData(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration)
         {
-            string adminUsername = "admin";
+            string adminUsername = "admin2";
 
-            var userExists = userManager.FindByNameAsync(adminUsername).Result;
+            var userExists = await userManager.FindByNameAsync(adminUsername);           
             if (userExists == null)
             {
                 ApplicationUser admin = new ApplicationUser()
                 {
                     Email = "raidenplayforyou@gmail.com",
                     SecurityStamp = Guid.NewGuid().ToString(),
-                    UserName = adminUsername
+                    UserName = adminUsername,
+                    EmailConfirmed = true
                 };
 
-                userManager.CreateAsync(admin,"Test%123").GetAwaiter();
+                await userManager.CreateAsync(admin,"Test%123");
 
-                if (!roleManager.RoleExistsAsync(UserRoles.Admin).Result)
-                    roleManager.CreateAsync(new IdentityRole(UserRoles.Admin)).GetAwaiter();
+                if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
+                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));                
 
-                if (roleManager.RoleExistsAsync(UserRoles.Admin).Result)
+                if (await roleManager.RoleExistsAsync(UserRoles.Admin))
                 {
-                    userManager.AddToRoleAsync(admin, UserRoles.Admin).GetAwaiter();
+                    await userManager.AddToRoleAsync(admin, UserRoles.Admin);
                 }
             }
         }

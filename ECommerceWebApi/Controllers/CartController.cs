@@ -31,11 +31,12 @@ namespace ECommerceWebApi.Controllers
             this.cartServices = cartServices;
         }
 
+        
         [EnableCors("Policy")]
         [HttpPost]
         [Route("addCart")]
         public async Task<IActionResult> AddToCart([FromBody]AddToCartModel addToCartModel)
-        {                               
+        {         
             var cartResponse = await cartServices.addToCartAsync(addToCartModel);
 
             // If function has any errors

@@ -12,9 +12,12 @@ namespace ECommerceIServices
     {
         Task createOrderGuest(OrderDTO orderModel);
         Task createOrderUser(OrderDTO orderModel,ApplicationUser user);
+        Task editOrder(OrderDTO orderModel);
         Task cancelOrder(int orderId);
         Task<List<Order>> getAllOrdersAsync();
         Task<List<Order>> getAllUsersOrdersAsync(ApplicationUser user);
-        Task EditOrder();
+        Task<string> generateOrderConfirmationTokenAsync(int id);
+        Task confirmOrderAsync(int id, string token);
+        Task sendOrderConfirmationEmail(int id, string email);
     }
 }

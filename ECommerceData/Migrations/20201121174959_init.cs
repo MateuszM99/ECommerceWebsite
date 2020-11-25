@@ -460,11 +460,11 @@ namespace ECommerceData.Migrations
                 columns: new[] { "Id", "VariationId", "AddedAt", "CategoryId", "Description", "ImageUrl", "ModifedAt", "Name", "Price", "SKU" },
                 values: new object[,]
                 {
-                    { 1, 1, new DateTime(2020, 11, 17, 17, 52, 15, 362, DateTimeKind.Local).AddTicks(1021), 1, "Plain black silk t-shirt", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Black t-shirt", 24.989999999999998, "BL-T-1" },
-                    { 2, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4254), 1, "Plain white silk t-shirt", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "White t-shirt", 24.989999999999998, "WT-T-2" },
-                    { 3, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4297), 2, "Jumper with logo", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Bogo Jumper", 69.989999999999995, "BG-JMP-3" },
-                    { 4, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4305), 2, "Comfortable oversize hoodie", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Oversize hoodie", 79.989999999999995, "OS-H-4" },
-                    { 5, 1, new DateTime(2020, 11, 17, 17, 52, 15, 364, DateTimeKind.Local).AddTicks(4308), 3, "Longsleeve with white stripes", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Grey Stripped Longsleeve", 49.990000000000002, "GRST-LS-2" }
+                    { 1, 1, new DateTime(2020, 11, 21, 18, 49, 59, 281, DateTimeKind.Local).AddTicks(2409), 1, "Plain black silk t-shirt", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Black t-shirt", 24.989999999999998, "BL-T-1" },
+                    { 2, 1, new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5129), 1, "Plain white silk t-shirt", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "White t-shirt", 24.989999999999998, "WT-T-2" },
+                    { 3, 1, new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5198), 2, "Jumper with logo", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Bogo Jumper", 69.989999999999995, "BG-JMP-3" },
+                    { 4, 1, new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5205), 2, "Comfortable oversize hoodie", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Oversize hoodie", 79.989999999999995, "OS-H-4" },
+                    { 5, 1, new DateTime(2020, 11, 21, 18, 49, 59, 285, DateTimeKind.Local).AddTicks(5209), 3, "Longsleeve with white stripes", null, new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified), "Grey Stripped Longsleeve", 49.990000000000002, "GRST-LS-2" }
                 });
 
             migrationBuilder.InsertData(

@@ -60,11 +60,13 @@ namespace ECommerceWebApi
             services.AddDbContext<ECommerceContext>(options =>
                options.UseSqlServer(
                    Configuration.GetConnectionString("ECommerceDbContext")));
-                       
+
             // For Identity  
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ECommerceContext>()
                 .AddDefaultTokenProviders();
+            
+            
 
             services.AddTransient<IEmailSender, EmailSender>();
             services.AddScoped<ICartServices, CartServices>();
@@ -130,7 +132,7 @@ namespace ECommerceWebApi
 
             if (!env.IsProduction())
             {
-                ModelBuilderExtension.SeedUsersData(userManager, roleManager, Configuration);
+                ModelBuilderExtension.SeedUsersData(userManager, roleManager, Configuration).GetAwaiter().GetResult();
             }
 
             app.UseEndpoints(endpoints =>

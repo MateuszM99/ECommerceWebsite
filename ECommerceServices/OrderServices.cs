@@ -22,12 +22,14 @@ namespace ECommerceServices
     {
         private readonly ILogger<OrderServices> logger;
         private readonly ECommerceContext appDb;
+        private readonly IEmailSender emailSender;
         private readonly IMapper mapper;
-        public OrderServices(ECommerceContext appDb,ILogger<OrderServices> logger,IMapper mapper)
+        public OrderServices(ECommerceContext appDb,ILogger<OrderServices> logger,IMapper mapper, IEmailSender emailSender)
         {
             this.logger = logger;
             this.appDb = appDb;
             this.mapper = mapper;
+            this.emailSender = emailSender;
         }
        
         public async Task createOrderUser(OrderDTO orderModel,ApplicationUser user)
@@ -84,19 +86,9 @@ namespace ECommerceServices
                 throw new HttpResponseException(message);
             }
 
-            var order = mapper.Map<Order>(orderModel);
-
-            order.AddedAt = DateTime.Now;
-            order.ModifiedAt = DateTime.Now;
-            order.isConfirmed = false;
-            order.UserId = user.Id;
-
-
-            await appDb.Orders.AddAsync(order);
-            await appDb.SaveChangesAsync();
-
             var cartItems = await appDb.CartProducts
                 .Where(c => c.CartId == orderModel.CartId)
+                .Include(p => p.Product)
                 .Include(o => o.Option)
                 .ToListAsync();
 
@@ -109,6 +101,18 @@ namespace ECommerceServices
                 throw new HttpResponseException(message);
             }
 
+            var order = mapper.Map<Order>(orderModel);
+
+            order.AddedAt = DateTime.Now;
+            order.ModifiedAt = DateTime.Now;
+            order.isConfirmed = false;
+            order.UserId = user.Id;
+
+
+            await appDb.Orders.AddAsync(order);
+            await appDb.SaveChangesAsync();
+
+            
             List<OrderProduct> orderItems = new List<OrderProduct>();
 
             foreach (var cartItem in cartItems)
@@ -125,13 +129,16 @@ namespace ECommerceServices
                 // remove the amount of ordered products from product stock
                 var productOption = await appDb.ProductOptions.FindAsync(cartItem.OptionId, cartItem.ProductId, cartItem.ProductVariationId);
                 productOption.ProductStock -= cartItem.Quantity;
+                order.Price += cartItem.Product.Price * cartItem.Quantity;
                
                 orderItems.Add(orderItem);
             }
 
             await appDb.OrderProducts.AddRangeAsync(orderItems);
             appDb.Carts.Remove(cart);
-            await appDb.SaveChangesAsync();          
+            await appDb.SaveChangesAsync();
+            
+            await sendOrderConfirmationEmail(order.Id, order.User.Email);
         }
 
         public async Task createOrderGuest(OrderDTO orderModel)
@@ -224,6 +231,7 @@ namespace ECommerceServices
                 // remove the amount of ordered products from product stock
                 var productOption = await appDb.ProductOptions.FindAsync(cartItem.OptionId,cartItem.ProductId,cartItem.ProductVariationId);
                 productOption.ProductStock -= cartItem.Quantity;
+                order.Price += cartItem.Product.Price * cartItem.Quantity;
 
                 orderItems.Add(orderItem);               
             }          
@@ -231,7 +239,36 @@ namespace ECommerceServices
             await appDb.OrderProducts.AddRangeAsync(orderItems);
             appDb.CartProducts.RemoveRange(cartItems);
             appDb.Carts.Remove(cart);
-            await appDb.SaveChangesAsync();           
+            await appDb.SaveChangesAsync();
+
+            await sendOrderConfirmationEmail(order.Id, order.ClientEmail);
+        }
+
+        public async Task editOrder(OrderDTO orderModel)
+        {
+            if(orderModel == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The {nameof(orderModel)} can't be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if(orderModel.Id == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The order id {nameof(orderModel.Id)} can't be null")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            var order = await appDb.Orders.FindAsync(orderModel.Id);
+
+            order = mapper.Map<Order>(orderModel);
+
+            await appDb.SaveChangesAsync();
         }
 
         public async Task cancelOrder(int orderId)
@@ -258,12 +295,7 @@ namespace ECommerceServices
             order.ModifiedAt = DateTime.Now;
             await appDb.SaveChangesAsync();            
         }
-
-        public Task EditOrder()
-        {
-            throw new NotImplementedException();
-        }
-
+       
         public async Task<List<Order>> getAllOrdersAsync()
         {
             logger.LogInformation($"Starting method {nameof(getAllOrdersAsync)}.");
@@ -297,6 +329,70 @@ namespace ECommerceServices
             logger.LogInformation($"Finished method {nameof(getAllUsersOrdersAsync)}.");
 
             return orders;
+        }
+
+        public async Task<string> generateOrderConfirmationTokenAsync(int id)
+        {
+            var order = await appDb.Orders.FindAsync(id);
+
+            if(order != null)
+            {
+                order.token = randomString(20);
+                await appDb.SaveChangesAsync();
+                return order.token;
+            }
+
+            return null;
+        }
+
+        public async Task confirmOrderAsync(int id,string token)
+        {
+            var order = await appDb.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                {
+                    Content = new StringContent($"The order is not found")
+                };
+                throw new HttpResponseException(message);
+            }
+
+            if (order != null)
+            {
+                if(order.token == token)
+                {
+                    order.isConfirmed = true;
+                    await appDb.SaveChangesAsync();                           
+                } else
+                {
+                    var message = new HttpResponseMessage(System.Net.HttpStatusCode.BadRequest)
+                    {
+                        Content = new StringContent($"The token is wrong")
+                    };
+                    throw new HttpResponseException(message);
+                }            
+            }
+        }
+
+        public async Task sendOrderConfirmationEmail(int id,string email)
+        {
+            var token = await generateOrderConfirmationTokenAsync(id);            
+            var baseUrl = "http://localhost:3000/accountConfirm";
+            var confirmationLink = baseUrl + String.Format("/?orderId={0}&token={1}", id, token);
+            //var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token },Request.Scheme);
+            string message = $"Click this link to confirm your order: " + confirmationLink;
+
+            await emailSender.SendEmailAsync(email, "Confirm your account", message);         
+        }
+
+        private string randomString(int length)
+        {
+            Random random = new Random();
+
+            const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            return new string(Enumerable.Repeat(chars, length)
+              .Select(s => s[random.Next(s.Length)]).ToArray());
         }
     }
 }

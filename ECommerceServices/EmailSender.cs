@@ -19,7 +19,7 @@ namespace ECommerceServices
 
         public AuthSenderOptions Options { get; }
 
-        public Task Execute(string apiKey, string email, string subject, string message)
+        public async Task<Response> Execute(string apiKey, string email, string subject, string message)
         {
             var client = new SendGridClient(apiKey);
             var msg = new SendGridMessage()
@@ -33,12 +33,12 @@ namespace ECommerceServices
            
             msg.SetClickTracking(false, false);
 
-            return client.SendEmailAsync(msg);
+            return await client.SendEmailAsync(msg);
         }
 
-        public Task SendEmailAsync(string email, string subject, string message)
+        public async Task<Response> SendEmailAsync(string email, string subject, string message)
         {
-            return Execute(Options.SendGridKey, email, subject, message);
+            return await Execute(Options.SendGridKey, email, subject, message);
         }
     }
 }

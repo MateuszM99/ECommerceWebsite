@@ -56,7 +56,7 @@ namespace ECommerceWebApi.Controllers
         public async Task<IActionResult> Login([FromBody] LoginModel model)
         {
             var user = await userManager.Users.Include(u => u.Address).SingleAsync(u => u.UserName == model.Username);
-            if (user != null && await userManager.CheckPasswordAsync(user, model.Password))
+            if (user != null && await userManager.CheckPasswordAsync(user, model.Password) && user.EmailConfirmed)
             {
                 var userRoles = await userManager.GetRolesAsync(user);
 
@@ -64,6 +64,7 @@ namespace ECommerceWebApi.Controllers
                 {
                     new Claim(ClaimTypes.Name, user.UserName),
                     new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                    new Claim(ClaimTypes.NameIdentifier, user.Id),
                 };
 
                 foreach (var userRole in userRoles)
@@ -81,10 +82,12 @@ namespace ECommerceWebApi.Controllers
                     signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
                     );
 
+                
                 return Ok(new
                 {
                     user,
                     token = new JwtSecurityTokenHandler().WriteToken(token),
+                    userRoles,
                     expiration = token.ValidTo
                 });
             }
@@ -127,6 +130,8 @@ namespace ECommerceWebApi.Controllers
             return Ok(new AuthResponse { Status = "Success", Message = "User created successfully!" });
         }
 
+        [Authorize(Roles = UserRoles.Admin)]
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("register-admin")]
         public async Task<IActionResult> RegisterAdmin([FromBody] RegisterModel model)
@@ -157,7 +162,41 @@ namespace ECommerceWebApi.Controllers
 
             return Ok(new AuthResponse { Status = "Success", Message = "User created successfully!" });
         }
-   
+
+        [Authorize(Roles = UserRoles.Admin)]
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("register-mod")]
+        public async Task<IActionResult> RegisterMod([FromBody] RegisterModel model)
+        {
+            var userExists = await userManager.FindByNameAsync(model.Username);
+            if (userExists != null)
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User already exists!" });
+
+            ApplicationUser user = new ApplicationUser()
+            {
+                Email = model.Email,
+                SecurityStamp = Guid.NewGuid().ToString(),
+                UserName = model.Username
+            };
+            var result = await userManager.CreateAsync(user, model.Password);
+            if (!result.Succeeded)
+                return StatusCode(StatusCodes.Status500InternalServerError, new AuthResponse { Status = "Error", Message = "User creation failed! Please check user details and try again." });
+
+            if (!await roleManager.RoleExistsAsync("Mod"))
+                await roleManager.CreateAsync(new IdentityRole("Mod"));
+            if (!await roleManager.RoleExistsAsync(UserRoles.User))
+                await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+
+            if (await roleManager.RoleExistsAsync("Mod"))
+            {
+                await userManager.AddToRoleAsync(user, "Mod");
+            }
+
+            return Ok(new AuthResponse { Status = "Success", Message = "Moderator created successfully!" });
+        }
+
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("confirmEmail")]
         public async Task<IActionResult> ConfirmEmail(string userId,string token)
@@ -175,7 +214,7 @@ namespace ECommerceWebApi.Controllers
             var result = await userManager.ConfirmEmailAsync(user, token);
 
             if (result.Succeeded)
-                return Ok();
+                return Ok(new { message = "Email succesfully confirmed" });
 
             return StatusCode(StatusCodes.Status404NotFound, "");
         }
@@ -186,7 +225,9 @@ namespace ECommerceWebApi.Controllers
         {
             var user = await userManager.FindByIdAsync(userId);
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
-            var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token },Request.Scheme);
+            var baseUrl = "http://localhost:3000/accountConfirm";
+            var confirmationLink = baseUrl + String.Format("/?userId={0}&token={1}", userId, token);
+            //var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token },Request.Scheme);
             string message = $"Click this link to confirm your account: " + confirmationLink;
 
             await emailSender.SendEmailAsync(user.Email, "Confirm your account", message);
@@ -219,6 +260,7 @@ namespace ECommerceWebApi.Controllers
         }
 
 
+        [EnableCors("Policy")]
         [HttpPost]
         [Authorize]
         [Route("editAddress")]

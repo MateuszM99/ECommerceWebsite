@@ -54,6 +54,8 @@ namespace ECommerceWebApi.Controllers
                     await orderServices.createOrderUser(orderModel, user);
                 else
                     await orderServices.createOrderGuest(orderModel);
+
+               
                 
                 logger.LogInformation($"Finished method {nameof(CreateOrder)}");
                 return Ok();
@@ -65,6 +67,29 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
+        [Authorize(UserRoles.Admin)]
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("editOrder")]
+        public async Task<IActionResult> EditOrder([FromBody]OrderDTO orderModel)
+        {
+            logger.LogInformation($"Starting method {nameof(EditOrder)}.");
+            try
+            {
+                await orderServices.editOrder(orderModel);
+
+                logger.LogInformation($"Finished method {nameof(EditOrder)}");
+                return Ok();
+            }
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                logger.LogError($"{ex.Message}");
+                throw;
+            }
+        }
+
+        [Authorize(UserRoles.Admin)]
+        [EnableCors("Policy")]
         [HttpPost]
         [Route("cancelOrder")]
         public async Task<IActionResult> CancelOrder(int orderId)
@@ -84,6 +109,9 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("getOrders")]
         public async Task<IActionResult> GetAllOrders()
         {
             logger.LogInformation($"Starting method {nameof(GetAllOrders)}.");
@@ -103,6 +131,9 @@ namespace ECommerceWebApi.Controllers
             }
         }
 
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Route("getUserOrders")]
         public async Task<IActionResult> GetAllUsersOrders()
         {
             logger.LogInformation($"Starting method {nameof(GetAllUsersOrders)}.");
@@ -145,5 +176,22 @@ namespace ECommerceWebApi.Controllers
         }
 
 
+        [EnableCors("Policy")]
+        [HttpGet]
+        [Route("confirmOrder")]
+        public async Task<IActionResult> ConfirmOrder(int id, string token)
+        {
+            try 
+            {
+                await orderServices.confirmOrderAsync(id, token);
+                return Ok(new { message = "Order succesfully confirmed" });
+            } 
+            catch (System.Web.Http.HttpResponseException ex)
+            {
+                throw;
+            }
+        }
+
+        
     }
 }

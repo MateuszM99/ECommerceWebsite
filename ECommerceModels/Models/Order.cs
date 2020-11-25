@@ -3,6 +3,7 @@ using ECommerceModels.Enums;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace ECommerceModels.Models
@@ -20,6 +21,8 @@ namespace ECommerceModels.Models
         public string ClientSurname { get; set; }
         public string ClientPhone { get; set; }      
         public bool isConfirmed { get; set; }
+        [NotMapped]
+        public string token { get; set; }
 
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }

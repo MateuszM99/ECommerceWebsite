@@ -13,10 +13,10 @@ namespace ECommerceWebApi.Maps
         public OrderProfile()
         {
             CreateMap<Order, OrderDTO>()
-                .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.User.FirstName))
-                .ForMember(dest => dest.ClientSurname, opt => opt.MapFrom(src => src.User.LastName))
-                .ForMember(dest => dest.ClientEmail, opt => opt.MapFrom(src => src.User.Email))
-                .ForMember(dest => dest.ClientPhone, opt => opt.MapFrom(src => src.User.PhoneNumber))
+                .ForMember(dest => dest.ClientName, opt => opt.MapFrom(src => src.User != null ? src.User.FirstName : src.ClientName))
+                .ForMember(dest => dest.ClientSurname, opt => opt.MapFrom(src => src.User != null ? src.User.LastName : src.ClientSurname))
+                .ForMember(dest => dest.ClientEmail, opt => opt.MapFrom(src => src.User != null ? src.User.Email : src.ClientEmail))
+                .ForMember(dest => dest.ClientPhone, opt => opt.MapFrom(src => src.User != null ? src.User.PhoneNumber : src.ClientPhone))
                 .ForMember(dest => dest.Address, opt => opt.MapFrom(src => src.Address))
                 .ForMember(dest => dest.Products, opt => opt.MapFrom(src => src.Products.Select(p => p.Product).ToList()));
 
