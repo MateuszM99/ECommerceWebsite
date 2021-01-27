@@ -201,6 +201,7 @@ namespace ECommerceServices
             var cartItems = await appDb.CartProducts
                 .Where(c => c.CartId == orderModel.CartId)
                 .Include(o => o.Option)
+                .Include(p => p.Product)
                 .ToListAsync();
 
             if (cartItems == null)
@@ -378,8 +379,8 @@ namespace ECommerceServices
         public async Task sendOrderConfirmationEmail(int id,string email)
         {
             var token = await generateOrderConfirmationTokenAsync(id);            
-            var baseUrl = "http://localhost:3000/accountConfirm";
-            var confirmationLink = baseUrl + String.Format("/?orderId={0}&token={1}", id, token);
+            var baseUrl = "http://localhost:3000/orderConfirm";
+            var confirmationLink = baseUrl + String.Format("?orderId={0}&token={1}", id, token);
             //var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token },Request.Scheme);
             string message = $"Click this link to confirm your order: " + confirmationLink;
 

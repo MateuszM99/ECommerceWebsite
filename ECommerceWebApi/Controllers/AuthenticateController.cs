@@ -226,7 +226,7 @@ namespace ECommerceWebApi.Controllers
             var user = await userManager.FindByIdAsync(userId);
             var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
             var baseUrl = "http://localhost:3000/accountConfirm";
-            var confirmationLink = baseUrl + String.Format("/?userId={0}&token={1}", userId, token);
+            var confirmationLink = baseUrl + String.Format("?userId={0}&token={1}", userId, token);
             //var confirmationLink = Url.Action("ConfirmEmail", "Authenticate", new { userId = user.Id, token = token },Request.Scheme);
             string message = $"Click this link to confirm your account: " + confirmationLink;
 
@@ -292,6 +292,35 @@ namespace ECommerceWebApi.Controllers
             return Ok(new { user, response = new AuthResponse { Status = "Success", Message = "Changes saved successfully" } });
         }
 
+        [EnableCors("Policy")]
+        [HttpPost]
+        [Authorize]
+        [Route("editPassword")]
+        public async Task<IActionResult> EditPassword([FromBody]PasswordChangeModel passwordModel)
+        {
+            var user = await userManager.GetUserAsync(HttpContext.User);
+            if(user != null)
+            {
+                if (String.IsNullOrWhiteSpace(passwordModel.oldPassword) || String.IsNullOrWhiteSpace(passwordModel.newPassword) || String.IsNullOrWhiteSpace(passwordModel.newPasswordConfirm))
+                {
+                    return StatusCode(StatusCodes.Status400BadRequest, new AuthResponse { Status = "Error", Message = "Provided password was in incorrect format" });
+                }
+                
+                if (passwordModel.newPassword.Equals(passwordModel.newPasswordConfirm))
+                {
+                    try
+                    {
+                        await userManager.ChangePasswordAsync(user, passwordModel.oldPassword, passwordModel.newPassword);
+                        return Ok(new { user, response = new AuthResponse { Status = "Success", Message = "Changes saved successfully" } });
+                    } 
+                    catch(Exception ex)
+                    {
+                        return StatusCode(StatusCodes.Status400BadRequest, new AuthResponse { Status = "Error", Message = "Provided old password was incorrect" });
+                    }
+                }               
+            }
+            return StatusCode(StatusCodes.Status400BadRequest, new AuthResponse { Status = "Error", Message = "User not found!" });
+        }
 
     }
 }

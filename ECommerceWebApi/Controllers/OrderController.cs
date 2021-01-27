@@ -132,7 +132,7 @@ namespace ECommerceWebApi.Controllers
         }
 
         [EnableCors("Policy")]
-        [HttpPost]
+        [HttpGet]
         [Route("getUserOrders")]
         public async Task<IActionResult> GetAllUsersOrders()
         {
