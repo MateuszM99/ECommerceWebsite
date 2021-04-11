@@ -1,0 +1,32 @@
+.profile__nav__tabs {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    min-width: 300px;
+    min-height: 92vh;
+    background-color: rgb(60, 60, 65);
+}
+
+.profile__nav__tabs__tab{
+    display: flex;
+    align-items: center;
+    outline: none;
+    border-style:none;
+    height: 75px;
+    width: 100%;
+    background-color: rgb(60, 60, 65);
+    color: white;
+    cursor: pointer;
+    border-bottom: white 1px solid;
+    padding-left: 0;
+}
+
+.profile__nav__tabs__tab__text{
+    justify-self: center;
+    margin: auto;
+}
+
+.clicked{
+    background-color: rgb(90, 90, 97);
+}

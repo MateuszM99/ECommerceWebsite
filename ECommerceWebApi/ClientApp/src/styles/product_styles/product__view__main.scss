@@ -1,0 +1,23 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.product__main {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+#products__list ul{
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+    grid-column-gap: 30px;
+    justify-content: space-around;
+    align-items: center;
+    width: 75%;
+}
+
+#products__list li{
+   list-style: none;
+}

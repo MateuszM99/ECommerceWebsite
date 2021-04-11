@@ -1,0 +1,33 @@
+.profile__header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    height: 8vh;
+    font-family: 'Lato', sans-serif;
+    font-weight: 600;
+    color: black;
+    box-shadow: 0px 2px 3px 0px rgba(0,0,0,0.2);
+}
+
+.profile__header h3{
+    justify-self: flex-start;
+    margin-left: 5%;
+    color:  rgb(60, 60, 65);
+}
+
+.profile__header__back__button{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    border-style:none;
+    height: 50%;
+    width: 10%;
+    background-color: rgb(60, 60, 65);
+    color: white;
+    justify-self: flex-end;
+    margin-left: auto;
+    margin-right: 200px;
+    font-size: 15px;
+    cursor: pointer;
+}

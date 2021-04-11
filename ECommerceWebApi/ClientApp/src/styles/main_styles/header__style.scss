@@ -1,0 +1,152 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: sticky;
+    top : 0;
+}
+
+.header.active {
+}
+
+.main__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    height: 10vh;
+    font-family: 'Lato', sans-serif;
+    font-weight: 400;
+    color: black;
+    background-color: white;
+    transition: all .7s ease-in;
+}
+
+.header__cart {
+    object-fit: contain;
+}
+
+.header__logo{
+    display: flex;
+    align-self: flex-end;
+    justify-content: flex-start;
+    width: 20%;
+}
+
+.shop__logo{
+    height: 90px;
+    width: 180px;
+}
+
+.search__input{
+    display: flex;
+    align-items: center;
+    width: 50%;
+    height: 36px;
+}
+
+.search__input input{
+    width: 80%;
+    height: 100%;
+    border-style: none;
+    border : solid 1px lightgrey;
+    font-size: 15px;
+    padding-left: 50px;
+    margin-right: 10px;
+    margin: 8px;
+    background-image: url('/images/search.png');
+    background-position: 2%;
+    background-repeat: no-repeat;
+    outline: none;
+}
+
+.search__input input[type=text]:focus {
+    border: 2px solid #555;
+}
+
+.search__input button{
+    outline: none;
+    border-style:none;
+    height: 100%;
+    width: 10%;
+    background-color:  rgb(60, 60, 65);
+    color: white;
+    cursor: pointer;
+}
+
+.main__header a{
+    font-size: 14px;
+}
+
+.right__header {
+    width: 15%;
+    height: 100%;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.right__header a{
+    cursor: pointer;
+}
+
+.right__header a:hover{
+    color : gray;
+}
+
+.right__header img{
+    cursor: pointer;
+}
+
+.cart__div {
+    display: flex;
+}
+
+.cart__div img{
+    position: absolute;
+    align-self: center;
+    padding-bottom: 8px;
+}
+
+
+.cart__itemsCount{
+    position: relative;
+    bottom: 7px;
+    left: 35px;
+}
+
+
+.main__categories{
+    font-family: 'Lato', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    height: 8vh;
+    width: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    color: black;
+    background-color: white;
+}
+
+.main__categories a{
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.main__categories a:hover{
+    border-bottom: solid 2px black;
+}
+
+.scrolled{
+    display: flex;
+    position: fixed;
+    width: 100%;
+    top: 0;
+  }

@@ -1,0 +1,49 @@
+
+.check__login__main{
+    display: flex;
+    justify-content: center;
+    align-items : center;
+    height: 100vh;
+    width: 100%;
+    background-color: #eeeeee;
+}
+
+
+.check__login__container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    height: 60vh;
+    width: 120vh;
+}
+
+.check__login__user {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 50%;
+}
+
+
+.check__login__guest{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 50%;
+    border-left: 1px solid lightgray;
+    a{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 50px;
+        width: 300px;
+        background-color: rgb(60, 60, 65);
+        color: white;
+        align-self: center;
+        cursor: pointer;
+    }
+}

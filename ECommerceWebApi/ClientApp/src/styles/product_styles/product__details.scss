@@ -1,0 +1,147 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.product__details__container {
+    display: flex;
+    justify-content: center;
+    padding: 50px;
+}
+
+.product__details__image img{
+    height: 747px;
+    width: 597px;
+}
+
+.product__details__info{
+    display: flex;
+    flex-direction: column;
+    margin-left: 60px;
+}
+
+.product__details__info__nav{
+    font-size: 13px;
+    display: flex;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: rgb(66, 67, 77);
+}
+
+.product__details__info__nav span{
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.product__details__info__header {
+    padding: 20px;
+    border-bottom: solid 1px lightgray;
+    color: rgb(66, 67, 77);
+}
+
+.product__details__info__header p{
+    padding-top: 10px;
+}
+
+.product__details__info__select{
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: solid 1px lightgray;
+}
+
+.product__details__info__select span{
+    margin-right: 75px;
+}
+
+.product__details__info__select span p{
+    font-size: 13px;
+    font-weight: 600;
+    padding-bottom: 10px;
+}
+
+.product__details__info__select span select{
+    border-style: none;
+    outline: none;
+    font-size: 12px;
+    border: solid 1px lightgray;
+    padding: 3px;
+    width: 50px;
+    height: 30px;
+}
+
+.product__details__info__select input{
+    margin-top: 21px;
+    text-align: center;
+    width: 32px;
+    height: 20px;
+    outline: none;
+    font-size: 15px;
+    padding: 5px;
+    border: solid 1px lightgray;
+}
+
+.product__details__info__select button {
+    margin-top: 21px;
+    margin-left: 25px;
+    outline: none;
+    border-style:none;
+    height: 32px;
+    width: 125px;
+    background-color: gray;
+    color: white;
+    cursor: pointer;
+}
+
+.product__details__info__characteristics{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-bottom: solid 1px lightgray;
+}
+
+.product__details__info__characteristics p{
+    align-self: flex-start;
+    font-weight: 600;
+    color: rgb(66, 67, 77);
+    padding-bottom: 15px;
+}
+
+.product__details__info__characteristics ul{
+    margin-left: 40px;
+    color:rgb(66, 67, 77);
+}
+
+.product__details__info__composition{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-bottom: solid 1px lightgray;
+}
+
+.product__details__info__composition p{
+    align-self: flex-start;
+    font-weight: 600;
+    color: rgb(66, 67, 77);
+    padding-bottom: 15px;
+}
+
+.product__details__info__composition ul{
+    margin-left: 40px;
+    color:rgb(66, 67, 77);
+}
+
+.product__details__info__about{
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    border-bottom: solid 1px lightgray;
+}
+
+.product__details__info__about p{
+    align-self: flex-start;
+    font-weight: 600;
+    color: rgb(66, 67, 77);
+    padding-bottom: 15px;
+}

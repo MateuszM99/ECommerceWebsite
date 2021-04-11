@@ -1,0 +1,284 @@
+.profile__edit__main__container{
+    display: flex;
+}
+
+.profile__edit__container{
+    margin: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profile__info__container{
+    margin: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profile__edit__container h2,.profile__info__container h2{
+    align-self: flex-start;
+    margin-bottom: 30px;
+    color:  rgb(60, 60, 65);
+}
+
+.profile__edit__container Form{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.profile__edit__container Form div,.profile__info__container div{
+    display: flex;
+    align-items: flex-start;
+}
+
+.profile__edit__container Form div span,.profile__info__container div span{
+    display: flex;
+    flex-direction: column;
+}
+
+.profile__edit__label,.profile__info__label{
+    align-self: flex-start;
+}
+
+.profile__edit__input__width0 {
+    margin-right: 25px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    border-style: none;
+    outline: none;
+    border: solid 1px lightgray;
+    background-color: rgb(252, 252, 252);
+    font-size: 15px; 
+    height: 30px;
+    width: 100px;
+    padding-left: 5px;
+}
+
+.profile__edit__input_width1 {
+    margin-right: 25px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    border-style: none;
+    outline: none;
+    border: solid 1px lightgray;
+    background-color: rgb(252, 252, 252);
+    font-size: 15px; 
+    height: 30px;
+    width: 200px;
+    padding-left: 5px;
+}
+
+.profile__edit__input__width2 {
+    margin-right: 25px;
+    margin-bottom: 20px;
+    margin-top: 10px;
+    border-style: none;
+    outline: none;
+    border: solid 1px lightgray;
+    background-color: rgb(252, 252, 252);
+    font-size: 15px; 
+    height: 30px;
+    width: 430px;
+    padding-left: 5px;
+}
+
+.profile__edit__input:focus, .profile__edit__input__width2:focus{
+    border: solid 2px lightgray;
+}
+
+.profile__info__text {
+    display: flex;
+    align-items: center;
+    margin-right: 25px;
+    margin-bottom: 20px;
+    margin-top: 10px;   
+    font-size: 15px; 
+    border: solid 1px lightgray;
+    background-color: rgb(252, 252, 252);
+    height: 30px;
+    width: 200px;
+    padding-left: 5px;
+}
+
+.profile__info__text2 {
+    display: flex;
+    align-items: center;
+    margin-right: 25px;
+    margin-bottom: 20px;
+    margin-top: 10px;   
+    font-size: 15px; 
+    border: solid 1px lightgray;
+    background-color: rgb(252, 252, 252);
+    height: 30px;
+    width: 430px;
+    padding-left: 5px;
+}
+
+.profile__info__text0{
+    display: flex;
+    align-items: center;
+    margin-right: 25px;
+    margin-bottom: 20px;
+    margin-top: 10px;   
+    font-size: 15px; 
+    border: solid 1px lightgray;
+    background-color: rgb(252, 252, 252);
+    height: 30px;
+    width: 100px;
+    padding-left: 5px;
+}
+
+.profile__edit__save__button{
+    outline: none;
+    border-style:none;
+    height: 50px;
+    width: 150px;
+    background-color: rgb(60, 60, 65);
+    color: white;
+    align-self: flex-start;
+    cursor: pointer;
+}
+
+.edit-validation{
+    margin-top: 5px;
+    font-size: 12px;
+    width: 60%;
+    color: red;
+    display: flex;
+    justify-content: flex-start;
+}
+
+.profile__orders__container{
+    display: flex;
+    flex-direction: column;
+    width: 75%;
+    margin: 25px;
+    margin-top: 75px;
+
+    table {
+        display: grid;
+        border-collapse: collapse;
+        min-width: 100%;
+        grid-template-columns: 
+          minmax(100px, 1fr)
+          minmax(250px, 2fr)
+          minmax(150px, 1.67fr)
+          minmax(150px, 1.67fr)
+          minmax(150px, 1.67fr)
+      }
+
+        thead {
+            display: contents;
+            line-height: 2px;
+            tr{
+                display: contents;
+                line-height: 2px; 
+            }
+        }
+        
+        tbody{
+            display: contents;
+            line-height: 25px;
+            tr{
+                display: contents;
+                line-height: 25px;
+            }
+        }
+
+        th,
+        td {
+        padding: 15px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        border: solid 1px lightgrey;
+        }
+
+        th {
+        position: sticky;
+        top: 0;
+        background: rgb(60, 60, 65);
+        font-weight: normal;
+        font-size: 0.9rem;
+        color: white;
+        }
+
+        th:last-child {
+            border: 0;
+          }
+          
+          td {
+            padding-top: 10px;
+            padding-bottom: 10px;
+            color: #808080;
+          }
+          
+          tr:nth-child(even) td {
+            background: #f8f6ff;
+          }
+
+}
+
+.profile__orders__container__filter{
+    display: flex;
+    align-items: center;
+    align-self: flex-end;
+    margin-bottom: 25px;
+
+    button{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        outline: none;
+        border-style:none;
+        height: 40px;
+        width: 120px;
+        background-color: rgb(60, 60, 65);
+        color: white;
+        margin-left: 5px;
+        margin-right: 50px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    label{
+        font-size: 16px;
+        padding-right: 5px;
+    }
+
+    input{
+        width: 250px;
+        height: 32px;
+        border-style: none;
+        border : solid 1px lightgrey;
+        font-size: 15px;
+        padding-left: 5px;
+        margin-right: 10px;
+        margin: 8px;
+        outline: none;
+        &:focus {
+            border: 2px solid lightgrey;
+        }
+    }
+}
+
+.edit__order__container{
+    display: flex;
+    flex-direction: column;
+    margin-top: 50px;
+    margin-left: 100px;
+}
+
+.profile__orders__container__button {
+    outline: none;
+    border-style:none;
+    height: 40px;
+    width: 150px;
+    background-color: rgb(60, 60, 65);
+    color: white;
+    cursor: pointer;
+    margin-bottom: 30px;
+}
+
