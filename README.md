@@ -1,6 +1,6 @@
 # ECommerceWebsite - online clothing shop site
 
-https://ecommercewebsitemm.azurewebsites.net/
+https://mmshopping.azurewebsites.net/
 
 ## Table of contents
 
